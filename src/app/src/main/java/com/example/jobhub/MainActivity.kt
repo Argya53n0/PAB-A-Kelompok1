@@ -5,12 +5,12 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import com.example.jobhub.ui.screens.LoginScreen
+import com.example.jobhub.ui.screens.RegisterScreen
 import com.example.jobhub.ui.theme.JOBHUBTheme
 
 class MainActivity : ComponentActivity() {
@@ -19,11 +19,11 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             JOBHUBTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    JobHubApp()
                 }
             }
         }
@@ -31,17 +31,16 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
+fun JobHubApp() {
+    // Simple state-based navigation for presentation mockup
+    var currentScreen by remember { mutableStateOf("Login") }
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    JOBHUBTheme {
-        Greeting("Android")
+    when (currentScreen) {
+        "Login" -> LoginScreen(
+            onNavigateToRegister = { currentScreen = "Register" }
+        )
+        "Register" -> RegisterScreen(
+            onNavigateToLogin = { currentScreen = "Login" }
+        )
     }
 }
