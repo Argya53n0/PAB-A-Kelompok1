@@ -2,7 +2,7 @@ package com.example.jobhub.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val BluePrimary = Color(0xFF2563EB)
+val BluePrimary = Color(0xFF1D4ED8) // blue-700 in tailwind
 val BlueDark = Color(0xFF1E40AF)
 val BlueLight = Color(0xFF60A5FA)
 

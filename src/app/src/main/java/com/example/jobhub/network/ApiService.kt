@@ -5,6 +5,8 @@ import com.example.jobhub.data.model.Application
 import com.example.jobhub.data.model.AuthResponse
 import com.example.jobhub.data.model.Bookmark
 import com.example.jobhub.data.model.JobListing
+import com.example.jobhub.data.model.JobResponse
+import com.example.jobhub.data.model.DashboardResponse
 import com.example.jobhub.data.model.JobSeekerProfile
 import com.example.jobhub.data.model.User
 import okhttp3.MultipartBody
@@ -32,12 +34,15 @@ interface ApiService {
     suspend fun getMe(): Response<ApiResponse<User>>
 
     @GET("jobs")
-    suspend fun getJobs(): Response<ApiResponse<List<JobListing>>>
+    suspend fun getJobs(): Response<JobResponse>
 
     @GET("jobs/{id}")
     suspend fun getJobDetail(@Path("id") id: Int): Response<ApiResponse<JobListing>>
 
-    // Job Seeker Profile
+    // Job Seeker Profile & Dashboard
+    @GET("job-seeker/dashboard")
+    suspend fun getDashboard(): Response<DashboardResponse>
+
     @GET("job-seeker/profile")
     suspend fun getProfile(): Response<ApiResponse<JobSeekerProfile>>
 

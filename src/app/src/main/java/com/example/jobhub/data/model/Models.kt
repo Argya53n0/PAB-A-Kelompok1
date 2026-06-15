@@ -22,26 +22,42 @@ data class JobSeekerProfile(
 
 data class Company(
     val id: Int,
-    @SerializedName("user_id") val userId: Int,
+    @SerializedName("user_id") val userId: Int?,
     val name: String,
-    val description: String?,
     val logo: String?,
+    val description: String?,
     val website: String?,
-    val industry: String?,
     val location: String?
+)
+
+data class Category(
+    val id: Int,
+    val name: String,
+    val slug: String?
 )
 
 data class JobListing(
     val id: Int,
-    @SerializedName("company_id") val companyId: Int,
+    @SerializedName("company_id") val companyId: Int?,
     val title: String,
     val description: String,
     val requirements: String?,
-    val salary: String?,
-    val location: String?,
-    @SerializedName("job_type") val jobType: String?,
+    val location: String,
+    val employment_type: String?,
+    val work_type: String?,
+    val salary_min: Int?,
+    val salary_max: Int?,
     val status: String?,
-    val company: Company? = null
+    val company: Company? = null,
+    val category: Category? = null
+)
+
+data class JobResponse(
+    val current_page: Int,
+    val data: List<JobListing>,
+    val next_page_url: String?,
+    val prev_page_url: String?,
+    val total: Int
 )
 
 data class Application(
@@ -61,10 +77,19 @@ data class Bookmark(
     val job_listing: JobListing? = null
 )
 
+// Dashboard
+data class DashboardResponse(
+    @SerializedName("total_applications") val totalApplications: Int,
+    @SerializedName("waiting_applications") val waitingApplications: Int,
+    @SerializedName("accepted_applications") val acceptedApplications: Int,
+    @SerializedName("recent_applications") val recentApplications: List<Application>
+)
+
 // Auth related requests and responses
 data class AuthResponse(
-    val message: String,
-    val token: String?,
+    val message: String?,
+    @SerializedName("access_token") val token: String?,
+    @SerializedName("token_type") val tokenType: String?,
     val user: User?
 )
 
