@@ -9,8 +9,8 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
 object ApiClient {
-    // For android emulator, localhost is 10.0.2.2
-    private const val BASE_URL = "http://10.0.2.2:8000/api/"
+    // Updated to your laptop's Wi-Fi IP because you are using a physical Android device
+    private const val BASE_URL = "http://192.168.100.203:8000/api/"
 
     fun getApiService(sessionManager: SessionManager): ApiService {
         val loggingInterceptor = HttpLoggingInterceptor().apply {
