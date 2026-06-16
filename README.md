@@ -32,27 +32,37 @@ Aplikasi ini butuh API dari repo RPL (Laravel). Buka project web/Laravel kalian,
   ```
   *(Ini akan mengekspos API-nya ke jaringan lokal/WiFi kamu).*
 
-### 2. Atur IP Address di Aplikasi Mobile (SANGAT PENTING!)
-Sebelum menjalankan aplikasi Android, kamu **wajib** mengecek pengaturan IP di file koneksi API.
+### 2. Atur Koneksi API (Wajib Baca!)
+Kabar baik! Sekarang kamu **tidak perlu lagi repot gonta-ganti IP Address** di dalam kode. Aplikasi sudah diatur untuk otomatis mendeteksi apakah kamu memakai Emulator atau HP Asli.
 
-1. Buka file `src/app/src/main/java/com/example/jobhub/network/ApiClient.kt` di Android Studio.
-2. Temukan variabel `BASE_URL` dan ganti alamatnya:
+- **Opsi A: Pakai Emulator (Aman dari bawaan)**
+  Aplikasi akan otomatis menggunakan IP `10.0.2.2`. Kamu tidak perlu melakukan apa-apa lagi! Langsung *Run* saja aplikasinya.
 
-   **Opsi A: Pakai Emulator (Aman dari bawaan)**
-   ```kotlin
-   private const val BASE_URL = "http://10.0.2.2:8000/api/"
-   ```
-   *(Catatan: `10.0.2.2` adalah IP khusus yang dipakai emulator untuk mengakses `localhost` laptopmu).*
+- **Opsi B: Pakai HP Asli (Lewat kabel USB)**
+  Aplikasi akan otomatis menggunakan `127.0.0.1` (*localhost* HP). **TETAPI**, agar *localhost* HP bisa tersambung ke *localhost* laptopmu, kamu **wajib** menjalankan 1 baris perintah sakti ini di terminal VSCode / Terminal bawaan Android Studio setiap kali baru mencolokkan HP:
+  
+  ```bash
+  adb reverse tcp:8000 tcp:8000
+  ```
+  *(Catatan: Jika muncul error 'adb is not recognized', jalankan terminal bawaan Android Studio di menu `View -> Tool Windows -> Terminal` dan jalankan perintah tersebut di sana, atau pastikan folder platform-tools SDK Android sudah masuk ke Environment Variables Windows).*
 
-   **Opsi B: Pakai HP Asli**
-   Ubah IP-nya jadi IP WiFi laptop kamu. Contoh jika IP laptopmu `192.168.100.5`:
-   ```kotlin
-   private const val BASE_URL = "http://192.168.100.5:8000/api/"
-   ```
+### 3. Cara Menjalankan Aplikasi (Build & Run)
+Buka folder `src` di **Android Studio** dan tunggu sampai proses *Gradle Sync* (loading di bagian bawah) selesai. Setelah itu, ikuti panduan sesuai perangkat yang kamu pilih:
 
-### 3. Build & Run
-1. Buka repo PAB ini menggunakan **Android Studio**.
-2. Tunggu sampai proses *Gradle Sync* di bagian bawah kanan selesai dan sukses (tanda *loading* hijau selesai).
-3. Pilih perangkatmu (Emulator / HP yang sudah dicolok).
-4. Tekan tombol **Play / Run** (ikon segitiga hijau) di bagian atas.
-5. Silakan login pakai akun pelamar yang ada di database-mu! 🎉
+#### Menjalankan di Emulator (Virtual Device)
+1. Buka **Device Manager** (Ikon HP di kanan atas atau `View -> Tool Windows -> Device Manager`).
+2. Klik **Create Device** jika belum punya emulator. Pilih tipe HP (misal: Pixel 6), lalu klik Next dan download System Image yang disarankan (misal: API 34), lalu Finish.
+3. Klik tombol **Play (▶️)** di samping nama emulator pada Device Manager untuk menyalakannya.
+4. Di bagian atas Android Studio (sebelah tombol Run), pastikan nama emulator-mu sudah terpilih.
+5. Klik tombol **Run 'app' (▶️ hijau)** di menu atas.
+6. Tunggu proses build selesai dan aplikasi akan terbuka otomatis di Emulator.
+
+#### Menjalankan di HP Asli (Physical Device)
+1. Siapkan kabel data (USB) dan sambungkan HP kamu ke laptop.
+2. Di HP, masuk ke **Pengaturan (Settings) -> Opsi Pengembang (Developer Options)**. *(Jika belum ada, buka Tentang Ponsel/About Phone, lalu ketuk 'Build Number' 7 kali).*
+3. Aktifkan **USB Debugging** di dalam menu Opsi Pengembang.
+4. Akan muncul *popup* konfirmasi di layar HP-mu yang meminta izin USB debugging dari komputer, pilih **Izinkan (Allow)**.
+5. Pastikan nama HP-mu muncul di menu drop-down perangkat di bagian atas Android Studio (sebelah tombol Run).
+6. **[PENTING]** Jalankan perintah `adb reverse tcp:8000 tcp:8000` di terminal seperti yang dijelaskan pada langkah 2 di atas.
+7. Klik tombol **Run 'app' (▶️ hijau)**. Aplikasi akan di-install dan terbuka di HP-mu.
+8. Silakan login menggunakan akun pelamar yang ada di database! 🎉
