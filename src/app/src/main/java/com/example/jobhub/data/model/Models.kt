@@ -97,3 +97,18 @@ data class ApiResponse<T>(
     val message: String?,
     val data: T?
 )
+
+data class ApplyJobResponse(
+    val message: String,
+    val application: Application?
+)
+
+data class ToggleBookmarkResponse(
+    val message: String,
+    @SerializedName("is_bookmarked") val isBookmarked: Boolean
+)
+
+data class ProfileUpdateResponse(
+    val message: String,
+    val user: User?
+)
