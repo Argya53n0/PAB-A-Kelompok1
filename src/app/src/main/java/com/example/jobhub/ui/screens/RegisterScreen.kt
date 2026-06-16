@@ -13,6 +13,8 @@ import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Security
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.filled.Work
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -25,6 +27,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
@@ -41,21 +44,78 @@ import com.example.jobhub.ui.viewmodel.AuthViewModel
 fun RegisterScreen(
     viewModel: AuthViewModel,
     onNavigateToLogin: () -> Unit,
-    onRegisterSuccess: () -> Unit
+    onRegisterSuccess: (String) -> Unit
 ) {
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordConf by remember { mutableStateOf("") }
     var agreed by remember { mutableStateOf(false) }
+    var passwordVisible by remember { mutableStateOf(false) }
+    var passwordConfVisible by remember { mutableStateOf(false) }
+
+    // Client-side validation error states
+    var nameError by remember { mutableStateOf<String?>(null) }
+    var emailError by remember { mutableStateOf<String?>(null) }
+    var passwordError by remember { mutableStateOf<String?>(null) }
+    var passwordConfError by remember { mutableStateOf<String?>(null) }
 
     val authState by viewModel.authState.collectAsState()
 
     LaunchedEffect(authState) {
-        if (authState is AuthState.Success) {
-            onRegisterSuccess()
+        if (authState is AuthState.RegisterSuccess) {
+            val registeredEmail = (authState as AuthState.RegisterSuccess).email
+            onRegisterSuccess(registeredEmail)
             viewModel.resetState()
         }
+    }
+
+    // Validation function
+    fun validate(): Boolean {
+        var isValid = true
+
+        // Name validation
+        if (name.isBlank()) {
+            nameError = "Nama lengkap wajib diisi"
+            isValid = false
+        } else {
+            nameError = null
+        }
+
+        // Email validation
+        if (email.isBlank()) {
+            emailError = "Email wajib diisi"
+            isValid = false
+        } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            emailError = "Format email tidak valid"
+            isValid = false
+        } else {
+            emailError = null
+        }
+
+        // Password validation
+        if (password.isBlank()) {
+            passwordError = "Kata sandi wajib diisi"
+            isValid = false
+        } else if (password.length < 8) {
+            passwordError = "Kata sandi minimal 8 karakter"
+            isValid = false
+        } else {
+            passwordError = null
+        }
+
+        // Password confirmation validation
+        if (passwordConf.isBlank()) {
+            passwordConfError = "Konfirmasi sandi wajib diisi"
+            isValid = false
+        } else if (passwordConf != password) {
+            passwordConfError = "Konfirmasi sandi tidak cocok dengan kata sandi"
+            isValid = false
+        } else {
+            passwordConfError = null
+        }
+
+        return isValid
     }
 
     Box(
@@ -123,6 +183,7 @@ fun RegisterScreen(
                         .fillMaxWidth()
                         .padding(24.dp)
                 ) {
+                    // ========== NAMA LENGKAP ==========
                     Text(
                         text = "Nama Lengkap",
                         fontSize = 12.sp,
@@ -132,24 +193,35 @@ fun RegisterScreen(
                     )
                     OutlinedTextField(
                         value = name,
-                        onValueChange = { name = it },
+                        onValueChange = { name = it; nameError = null },
                         placeholder = { Text("John Doe", color = Color.Gray) },
                         leadingIcon = {
                             Icon(Icons.Default.Person, contentDescription = "Person", tint = Color.Gray)
                         },
+                        isError = nameError != null,
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = BluePrimary,
                             unfocusedBorderColor = Color(0xFFE2E8F0),
+                            errorBorderColor = Color(0xFFDC2626),
                             focusedContainerColor = Color.White,
                             unfocusedContainerColor = Color.White
                         ),
                         singleLine = true
                     )
+                    if (nameError != null) {
+                        Text(
+                            text = nameError!!,
+                            color = Color(0xFFDC2626),
+                            fontSize = 11.sp,
+                            modifier = Modifier.padding(start = 4.dp, top = 4.dp)
+                        )
+                    }
                     
                     Spacer(modifier = Modifier.height(16.dp))
 
+                    // ========== EMAIL ==========
                     Text(
                         text = "Email",
                         fontSize = 12.sp,
@@ -159,24 +231,35 @@ fun RegisterScreen(
                     )
                     OutlinedTextField(
                         value = email,
-                        onValueChange = { email = it },
+                        onValueChange = { email = it; emailError = null },
                         placeholder = { Text("nama@email.com", color = Color.Gray) },
                         leadingIcon = {
                             Icon(Icons.Default.Email, contentDescription = "Email", tint = Color.Gray)
                         },
+                        isError = emailError != null,
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = BluePrimary,
                             unfocusedBorderColor = Color(0xFFE2E8F0),
+                            errorBorderColor = Color(0xFFDC2626),
                             focusedContainerColor = Color.White,
                             unfocusedContainerColor = Color.White
                         ),
                         singleLine = true
                     )
+                    if (emailError != null) {
+                        Text(
+                            text = emailError!!,
+                            color = Color(0xFFDC2626),
+                            fontSize = 11.sp,
+                            modifier = Modifier.padding(start = 4.dp, top = 4.dp)
+                        )
+                    }
                     
                     Spacer(modifier = Modifier.height(16.dp))
 
+                    // ========== KATA SANDI ==========
                     Text(
                         text = "Kata Sandi",
                         fontSize = 12.sp,
@@ -186,25 +269,45 @@ fun RegisterScreen(
                     )
                     OutlinedTextField(
                         value = password,
-                        onValueChange = { password = it },
+                        onValueChange = { password = it; passwordError = null },
                         placeholder = { Text("••••••••", color = Color.Gray) },
                         leadingIcon = {
                             Icon(Icons.Default.Lock, contentDescription = "Lock", tint = Color.Gray)
                         },
-                        visualTransformation = PasswordVisualTransformation(),
+                        trailingIcon = {
+                            IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                                Icon(
+                                    imageVector = if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                                    contentDescription = if (passwordVisible) "Sembunyikan sandi" else "Tampilkan sandi",
+                                    tint = Color.Gray
+                                )
+                            }
+                        },
+                        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                        isError = passwordError != null,
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = BluePrimary,
                             unfocusedBorderColor = Color(0xFFE2E8F0),
+                            errorBorderColor = Color(0xFFDC2626),
                             focusedContainerColor = Color.White,
                             unfocusedContainerColor = Color.White
                         ),
                         singleLine = true
                     )
+                    if (passwordError != null) {
+                        Text(
+                            text = passwordError!!,
+                            color = Color(0xFFDC2626),
+                            fontSize = 11.sp,
+                            modifier = Modifier.padding(start = 4.dp, top = 4.dp)
+                        )
+                    }
                     
                     Spacer(modifier = Modifier.height(16.dp))
 
+                    // ========== KONFIRMASI SANDI ==========
                     Text(
                         text = "Konfirmasi Sandi",
                         fontSize = 12.sp,
@@ -214,22 +317,41 @@ fun RegisterScreen(
                     )
                     OutlinedTextField(
                         value = passwordConf,
-                        onValueChange = { passwordConf = it },
+                        onValueChange = { passwordConf = it; passwordConfError = null },
                         placeholder = { Text("••••••••", color = Color.Gray) },
                         leadingIcon = {
                             Icon(Icons.Default.Security, contentDescription = "Security", tint = Color.Gray)
                         },
-                        visualTransformation = PasswordVisualTransformation(),
+                        trailingIcon = {
+                            IconButton(onClick = { passwordConfVisible = !passwordConfVisible }) {
+                                Icon(
+                                    imageVector = if (passwordConfVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                                    contentDescription = if (passwordConfVisible) "Sembunyikan sandi" else "Tampilkan sandi",
+                                    tint = Color.Gray
+                                )
+                            }
+                        },
+                        visualTransformation = if (passwordConfVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                        isError = passwordConfError != null,
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = BluePrimary,
                             unfocusedBorderColor = Color(0xFFE2E8F0),
+                            errorBorderColor = Color(0xFFDC2626),
                             focusedContainerColor = Color.White,
                             unfocusedContainerColor = Color.White
                         ),
                         singleLine = true
                     )
+                    if (passwordConfError != null) {
+                        Text(
+                            text = passwordConfError!!,
+                            color = Color(0xFFDC2626),
+                            fontSize = 11.sp,
+                            modifier = Modifier.padding(start = 4.dp, top = 4.dp)
+                        )
+                    }
 
                     Spacer(modifier = Modifier.height(16.dp))
 
@@ -277,8 +399,11 @@ fun RegisterScreen(
                     }
 
                     Button(
-                        // pass empty phone for now as the image doesn't show phone number field
-                        onClick = { viewModel.register(name, email, "", password, passwordConf) },
+                        onClick = {
+                            if (validate()) {
+                                viewModel.register(name, email, "", password, passwordConf)
+                            }
+                        },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(50.dp),

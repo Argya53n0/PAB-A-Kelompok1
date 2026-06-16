@@ -22,8 +22,13 @@ class HomeViewModel(private val sessionManager: SessionManager) : ViewModel() {
     private val _homeState = MutableStateFlow<HomeState>(HomeState.Loading)
     val homeState: StateFlow<HomeState> = _homeState.asStateFlow()
 
-    init {
-        fetchJobs()
+    private var hasFetched = false
+
+    fun fetchJobsIfNeeded() {
+        if (!hasFetched) {
+            hasFetched = true
+            fetchJobs()
+        }
     }
 
     fun fetchJobs() {
