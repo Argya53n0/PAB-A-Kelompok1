@@ -2,12 +2,14 @@ package com.example.jobhub.network
 
 import com.example.jobhub.data.model.ApiResponse
 import com.example.jobhub.data.model.Application
+import com.example.jobhub.data.model.ApplyJobResponse
 import com.example.jobhub.data.model.AuthResponse
 import com.example.jobhub.data.model.Bookmark
 import com.example.jobhub.data.model.JobListing
 import com.example.jobhub.data.model.JobResponse
 import com.example.jobhub.data.model.DashboardResponse
-import com.example.jobhub.data.model.JobSeekerProfile
+import com.example.jobhub.data.model.ProfileUpdateResponse
+import com.example.jobhub.data.model.ToggleBookmarkResponse
 import com.example.jobhub.data.model.User
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
