@@ -34,20 +34,20 @@ interface ApiService {
     suspend fun logout(): Response<ApiResponse<Any>>
 
     @GET("me")
-    suspend fun getMe(): Response<ApiResponse<User>>
+    suspend fun getMe(): Response<User>
 
     @GET("jobs")
     suspend fun getJobs(): Response<JobResponse>
 
     @GET("jobs/{id}")
-    suspend fun getJobDetail(@Path("id") id: Int): Response<ApiResponse<JobListing>>
+    suspend fun getJobDetail(@Path("id") id: Int): Response<JobListing>
 
     // Job Seeker Profile & Dashboard
     @GET("job-seeker/dashboard")
     suspend fun getDashboard(): Response<DashboardResponse>
 
     @GET("job-seeker/profile")
-    suspend fun getProfile(): Response<ApiResponse<JobSeekerProfile>>
+    suspend fun getProfile(): Response<User>
 
     @Multipart
     @POST("job-seeker/profile")
@@ -58,25 +58,25 @@ interface ApiService {
         @Part("phone") phone: RequestBody?,
         @Part("address") address: RequestBody?,
         @Part resume: MultipartBody.Part?
-    ): Response<ApiResponse<JobSeekerProfile>>
+    ): Response<ProfileUpdateResponse>
 
     // Applications
     @GET("job-seeker/applications")
-    suspend fun getApplications(): Response<ApiResponse<List<Application>>>
+    suspend fun getApplications(): Response<List<Application>>
 
     @POST("job-seeker/apply/{jobListing}")
     suspend fun applyJob(
         @Path("jobListing") jobId: Int,
         @Body request: Map<String, String> // e.g., cover_letter
-    ): Response<ApiResponse<Application>>
+    ): Response<ApplyJobResponse>
 
     @DELETE("job-seeker/applications/{application}")
-    suspend fun deleteApplication(@Path("application") applicationId: Int): Response<ApiResponse<Any>>
+    suspend fun deleteApplication(@Path("application") applicationId: Int): Response<Map<String, String>>
 
     // Bookmarks
     @GET("job-seeker/bookmarks")
-    suspend fun getBookmarks(): Response<ApiResponse<List<Bookmark>>>
+    suspend fun getBookmarks(): Response<List<Bookmark>>
 
     @POST("job-seeker/bookmark/{jobListing}")
-    suspend fun toggleBookmark(@Path("jobListing") jobId: Int): Response<ApiResponse<Any>>
+    suspend fun toggleBookmark(@Path("jobListing") jobId: Int): Response<ToggleBookmarkResponse>
 }
