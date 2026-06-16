@@ -46,6 +46,37 @@ fun LoginScreen(
     var passwordVisible by remember { mutableStateOf(false) }
     var rememberMe by remember { mutableStateOf(false) }
 
+    // Client-side validation error states
+    var emailError by remember { mutableStateOf<String?>(null) }
+    var passwordError by remember { mutableStateOf<String?>(null) }
+
+    // Validation function
+    fun validate(): Boolean {
+        var isValid = true
+
+        if (email.isBlank()) {
+            emailError = "Email wajib diisi"
+            isValid = false
+        } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            emailError = "Format email tidak valid"
+            isValid = false
+        } else {
+            emailError = null
+        }
+
+        if (password.isBlank()) {
+            passwordError = "Kata sandi wajib diisi"
+            isValid = false
+        } else if (password.length < 8) {
+            passwordError = "Kata sandi minimal 8 karakter"
+            isValid = false
+        } else {
+            passwordError = null
+        }
+
+        return isValid
+    }
+
     val authState by viewModel.authState.collectAsState()
 
     LaunchedEffect(authState) {
@@ -111,21 +142,31 @@ fun LoginScreen(
                     )
                     OutlinedTextField(
                         value = email,
-                        onValueChange = { email = it },
+                        onValueChange = { email = it; emailError = null },
                         placeholder = { Text("contoh@email.com", color = Color.Gray) },
                         leadingIcon = {
                             Icon(Icons.Default.Email, contentDescription = "Email Icon", tint = Color.Gray)
                         },
+                        isError = emailError != null,
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = BluePrimary,
                             unfocusedBorderColor = Color(0xFFE2E8F0),
+                            errorBorderColor = Color(0xFFDC2626),
                             focusedContainerColor = Color.White,
                             unfocusedContainerColor = Color.White
                         ),
                         singleLine = true
                     )
+                    if (emailError != null) {
+                        Text(
+                            text = emailError!!,
+                            color = Color(0xFFDC2626),
+                            fontSize = 11.sp,
+                            modifier = Modifier.padding(start = 4.dp, top = 4.dp)
+                        )
+                    }
 
                     Spacer(modifier = Modifier.height(16.dp))
 
@@ -151,7 +192,7 @@ fun LoginScreen(
                     Spacer(modifier = Modifier.height(8.dp))
                     OutlinedTextField(
                         value = password,
-                        onValueChange = { password = it },
+                        onValueChange = { password = it; passwordError = null },
                         placeholder = { Text("••••••••", color = Color.Gray) },
                         leadingIcon = {
                             Icon(Icons.Default.Lock, contentDescription = "Lock Icon", tint = Color.Gray)
@@ -165,16 +206,26 @@ fun LoginScreen(
                             }
                         },
                         visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                        isError = passwordError != null,
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = BluePrimary,
                             unfocusedBorderColor = Color(0xFFE2E8F0),
+                            errorBorderColor = Color(0xFFDC2626),
                             focusedContainerColor = Color.White,
                             unfocusedContainerColor = Color.White
                         ),
                         singleLine = true
                     )
+                    if (passwordError != null) {
+                        Text(
+                            text = passwordError!!,
+                            color = Color(0xFFDC2626),
+                            fontSize = 11.sp,
+                            modifier = Modifier.padding(start = 4.dp, top = 4.dp)
+                        )
+                    }
 
                     Spacer(modifier = Modifier.height(16.dp))
 
@@ -211,7 +262,11 @@ fun LoginScreen(
                     }
 
                     Button(
-                        onClick = { viewModel.login(email, password) },
+                        onClick = {
+                            if (validate()) {
+                                viewModel.login(email, password)
+                            }
+                        },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(50.dp),

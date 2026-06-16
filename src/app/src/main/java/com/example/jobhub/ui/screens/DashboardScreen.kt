@@ -30,6 +30,8 @@ import com.example.jobhub.ui.viewmodel.DashboardViewModel
 import java.text.SimpleDateFormat
 import java.util.Locale
 
+import androidx.compose.runtime.LaunchedEffect
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
@@ -38,6 +40,10 @@ fun DashboardScreen(
 ) {
     val dashboardState by viewModel.dashboardState.collectAsState()
 
+    // Fetch dashboard data only when this screen is actually displayed
+    LaunchedEffect(Unit) {
+        viewModel.fetchDashboardIfNeeded()
+    }
     Scaffold(
         topBar = {
             TopAppBar(

@@ -24,6 +24,9 @@ interface ApiService {
     @POST("register")
     suspend fun register(@Body request: Map<String, String>): Response<AuthResponse>
 
+    @POST("verify-otp")
+    suspend fun verifyOtp(@Body request: Map<String, String>): Response<ApiResponse<Any>>
+
     @POST("login")
     suspend fun login(@Body request: Map<String, String>): Response<AuthResponse>
 

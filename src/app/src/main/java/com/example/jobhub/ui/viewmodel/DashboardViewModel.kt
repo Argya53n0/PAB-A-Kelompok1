@@ -22,8 +22,13 @@ class DashboardViewModel(private val sessionManager: SessionManager) : ViewModel
     private val _dashboardState = MutableStateFlow<DashboardState>(DashboardState.Loading)
     val dashboardState: StateFlow<DashboardState> = _dashboardState.asStateFlow()
 
-    init {
-        fetchDashboard()
+    private var hasFetched = false
+
+    fun fetchDashboardIfNeeded() {
+        if (!hasFetched) {
+            hasFetched = true
+            fetchDashboard()
+        }
     }
 
     fun fetchDashboard() {

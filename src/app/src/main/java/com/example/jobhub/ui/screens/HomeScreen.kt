@@ -28,6 +28,8 @@ import com.example.jobhub.ui.viewmodel.HomeViewModel
 import java.text.NumberFormat
 import java.util.Locale
 
+import androidx.compose.runtime.LaunchedEffect
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
@@ -35,6 +37,11 @@ fun HomeScreen(
     onJobClick: (Int) -> Unit
 ) {
     val homeState by viewModel.homeState.collectAsState()
+
+    // Fetch jobs only when this screen is actually displayed
+    LaunchedEffect(Unit) {
+        viewModel.fetchJobsIfNeeded()
+    }
 
     Scaffold(
         topBar = {
