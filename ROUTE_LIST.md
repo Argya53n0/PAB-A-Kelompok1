@@ -9,8 +9,7 @@
 ```mermaid
 graph TD
     A[login] -->|Register| B[register]
-    B -->|Register Sukses| C["otp/{email}"]
-    C -->|OTP Terverifikasi| A
+    B -->|Register Sukses| A
     A -->|Login Sukses| D[main]
     
     D --> E[dashboard]
@@ -34,14 +33,12 @@ Route-route ini berada di `NavHost` utama dan dikelola di `MainActivity.kt`.
 |---|---|---|---|---|
 | `login` | `LoginScreen` | `AuthViewModel` | — | ✅ Sudah ada |
 | `register` | `RegisterScreen` | `AuthViewModel` | — | ✅ Sudah ada |
-| `otp/{email}` | `OtpScreen` | `AuthViewModel` | `email: String` | ✅ Sudah ada |
 | `main` | `MainScreen` | — | — | ✅ Sudah ada |
 
 ### Alur Navigasi Auth:
 1. **Login** → Jika belum punya akun → `register`
-2. **Register** → Sukses → `otp/{email}` (email otomatis dilempar)
-3. **OTP** → Verifikasi sukses → kembali ke `login` (user wajib login ulang)
-4. **Login** → Sukses → `main`
+2. **Register** → Sukses → `login`
+3. **Login** → Sukses → `main`
 
 ---
 
@@ -76,8 +73,7 @@ Route-route ini belum dimasukkan ke `NavHost`. Tim frontend perlu menambahkan co
 
 | Method | Endpoint | Fungsi ViewModel | Response | Keterangan |
 |---|---|---|---|---|
-| `POST` | `/api/register` | `register(name, email, phone, pass, passConf)` | `AuthResponse` | Daftarkan user baru, kirim OTP ke email |
-| `POST` | `/api/verify-otp` | `verifyOtp(email, otp)` | `ApiResponse<Any>` | Verifikasi kode OTP |
+| `POST` | `/api/register` | `register(name, email, phone, pass, passConf)` | `AuthResponse` | Daftarkan user baru |
 | `POST` | `/api/login` | `login(email, password)` | `AuthResponse` | Login, menyimpan token |
 | `POST` | `/api/logout` | — | `ApiResponse<Any>` | Hapus token (belum ada di ViewModel) |
 | `GET` | `/api/me` | — | `User` | Ambil data user yang login |
@@ -208,7 +204,6 @@ com.example.jobhub/
 │   ├── screens/
 │   │   ├── LoginScreen.kt            ✅
 │   │   ├── RegisterScreen.kt         ✅
-│   │   ├── OtpScreen.kt              ✅
 │   │   ├── MainScreen.kt             ✅ (Bottom Nav)
 │   │   ├── DashboardScreen.kt        ✅
 │   │   ├── HomeScreen.kt             ✅ (Daftar Lowongan)

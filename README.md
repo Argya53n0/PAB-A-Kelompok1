@@ -16,35 +16,30 @@ Aplikasi mobile JOBHUB untuk membantu Job Seeker mencari dan melamar pekerjaan m
 Karena aplikasi mobile ini terhubung dengan backend Laravel, ada beberapa langkah penting agar aplikasinya bisa berjalan lancar dan terhubung dengan *database*.
 
 ### 1. Jalankan Backend Laravel Dulu
-Aplikasi ini butuh API dari repo RPL (Laravel). Buka project web/Laravel kalian, dan jalankan servernya:
+Aplikasi ini butuh API dari repo RPL (Laravel). Buka project web/Laravel kalian, masuk ke folder `src`, dan jalankan servernya seperti biasa:
 
-- **Kalau kamu pakai Emulator (Virtual Device) Android Studio:**
-  Cukup jalankan artisan biasa:
-  ```bash
-  php artisan serve
-  ```
-  *(Biarkan jalan di `http://127.0.0.1:8000`)*
+```bash
+cd src
+php artisan serve
+```
+*(Server akan berjalan di `http://127.0.0.1:8000`)*
 
-- **Kalau kamu pakai HP Asli (Lewat kabel data / WiFi debugging):**
-  Kamu harus buka servernya ke IP WiFi laptop kamu supaya HP-nya bisa mengakses. Jalankan perintah ini:
-  ```bash
-  php artisan serve --host=0.0.0.0
-  ```
-  *(Ini akan mengekspos API-nya ke jaringan lokal/WiFi kamu).*
+### 2. Atur Koneksi API (Sangat Penting!)
+Secara kodingan, aplikasi ini **sudah nol konfigurasi (zero config)**. Kamu tidak perlu gonta-ganti IP Address di dalam kode. Aplikasi sudah diatur untuk otomatis mendeteksi apakah kamu memakai Emulator atau HP Asli.
 
-### 2. Atur Koneksi API (Wajib Baca!)
-Kabar baik! Sekarang kamu **tidak perlu lagi repot gonta-ganti IP Address** di dalam kode. Aplikasi sudah diatur untuk otomatis mendeteksi apakah kamu memakai Emulator atau HP Asli.
-
-- **Opsi A: Pakai Emulator (Aman dari bawaan)**
-  Aplikasi akan otomatis menggunakan IP `10.0.2.2`. Kamu tidak perlu melakukan apa-apa lagi! Langsung *Run* saja aplikasinya.
+- **Opsi A: Pakai Emulator (Android Studio / AVD)**
+  Aplikasi akan otomatis menggunakan IP `10.0.2.2`. Kamu **tidak perlu melakukan konfigurasi tambahan apapun**. Langsung *Run* saja aplikasinya.
 
 - **Opsi B: Pakai HP Asli (Lewat kabel USB)**
-  Aplikasi akan otomatis menggunakan `127.0.0.1` (*localhost* HP). **TETAPI**, agar *localhost* HP bisa tersambung ke *localhost* laptopmu, kamu **wajib** menjalankan 1 baris perintah sakti ini di terminal VSCode / Terminal bawaan Android Studio setiap kali baru mencolokkan HP:
+  Aplikasi akan otomatis menggunakan `127.0.0.1` (*localhost* HP). Agar *localhost* HP bisa tersambung ke *localhost* laptop, kamu **wajib** menjalankan 1 baris perintah ini di terminal (hanya 1x selama dicolok):
   
   ```bash
   adb reverse tcp:8000 tcp:8000
   ```
-  *(Catatan: Jika muncul error 'adb is not recognized', jalankan terminal bawaan Android Studio di menu `View -> Tool Windows -> Terminal` dan jalankan perintah tersebut di sana, atau pastikan folder platform-tools SDK Android sudah masuk ke Environment Variables Windows).*
+  > **💡 Solusi jika error 'adb is not recognized':**
+  > Artinya path ADB belum disetting di Windows. Kamu bisa pakai path lengkap (sesuaikan username PC kamu):
+  > `& "C:\Users\%USERNAME%\AppData\Local\Android\Sdk\platform-tools\adb.exe" reverse tcp:8000 tcp:8000`
+
 
 ### 3. Cara Menjalankan Aplikasi (Build & Run)
 Buka folder `src` di **Android Studio** dan tunggu sampai proses *Gradle Sync* (loading di bagian bawah) selesai. Setelah itu, ikuti panduan sesuai perangkat yang kamu pilih:
