@@ -16,7 +16,6 @@ sealed class AuthState {
     object Loading : AuthState()
     data class Success(val user: User) : AuthState()
     data class RegisterSuccess(val email: String) : AuthState()
-    object OtpSuccess : AuthState()
     data class Error(val message: String) : AuthState()
 }
 
@@ -92,29 +91,10 @@ class AuthViewModel(private val sessionManager: SessionManager) : ViewModel() {
                 val response = apiService.register(request)
                 
                 if (response.isSuccessful) {
-                    // Registration successful, proceed to OTP verification.
+                    // Registration successful, proceed to login.
                     _authState.value = AuthState.RegisterSuccess(email)
                 } else {
                     val msg = parseErrorBody(response.errorBody(), "Registration failed: ${response.message()}")
-                    _authState.value = AuthState.Error(msg)
-                }
-            } catch (e: Exception) {
-                _authState.value = AuthState.Error(e.localizedMessage ?: "Unknown error occurred")
-            }
-        }
-    }
-
-    fun verifyOtp(email: String, otp: String) {
-        viewModelScope.launch {
-            _authState.value = AuthState.Loading
-            try {
-                val request = mapOf("email" to email, "otp_code" to otp)
-                val response = apiService.verifyOtp(request)
-
-                if (response.isSuccessful) {
-                    _authState.value = AuthState.OtpSuccess
-                } else {
-                    val msg = parseErrorBody(response.errorBody(), "Verifikasi OTP gagal: ${response.message()}")
                     _authState.value = AuthState.Error(msg)
                 }
             } catch (e: Exception) {

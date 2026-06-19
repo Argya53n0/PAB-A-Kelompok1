@@ -20,7 +20,6 @@ import androidx.navigation.compose.rememberNavController
 import com.example.jobhub.data.local.SessionManager
 import com.example.jobhub.ui.screens.LoginScreen
 import com.example.jobhub.ui.screens.MainScreen
-import com.example.jobhub.ui.screens.OtpScreen
 import com.example.jobhub.ui.screens.RegisterScreen
 import com.example.jobhub.ui.theme.JOBHUBTheme
 import com.example.jobhub.ui.viewmodel.AuthViewModel
@@ -102,27 +101,8 @@ fun JobHubApp() {
                 viewModel = authViewModel,
                 onNavigateToLogin = { navController.navigate("login") },
                 onRegisterSuccess = { email ->
-                    navController.navigate("otp/$email") {
+                    navController.navigate("login") {
                         popUpTo("register") { inclusive = true }
-                    }
-                }
-            )
-        }
-        composable("otp/{email}") { backStackEntry ->
-            val email = backStackEntry.arguments?.getString("email") ?: ""
-            OtpScreen(
-                email = email,
-                viewModel = authViewModel,
-                onNavigateToLogin = { 
-                    navController.navigate("login") {
-                        popUpTo("otp/{email}") { inclusive = true }
-                    }
-                },
-                onOtpSuccess = {
-                    // Navigate to login after successful OTP so they login again
-                    navController.navigate("login") {
-                        popUpTo("otp/{email}") { inclusive = true }
-                        popUpTo("login") { inclusive = true }
                     }
                 }
             )
