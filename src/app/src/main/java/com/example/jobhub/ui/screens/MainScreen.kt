@@ -34,6 +34,7 @@ sealed class BottomNavItem(val route: String, val title: String, val icon: Image
 fun MainScreen(
     dashboardViewModel: DashboardViewModel,
     homeViewModel: HomeViewModel,
+    onNavigateToJobDetail: (Int) -> Unit,
     onLogout: () -> Unit
 ) {
     val navController = rememberNavController()
@@ -45,33 +46,30 @@ fun MainScreen(
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = BottomNavItem.Dashboard.route,
+            startDestination = BottomNavItem.Jobs.route,
             modifier = Modifier.padding(innerPadding)
         ) {
-            composable(BottomNavItem.Dashboard.route) {
-                DashboardScreen(
-                    viewModel = dashboardViewModel,
-                    onApplicationClick = { /* Navigate to detail */ }
-                )
-            }
             composable(BottomNavItem.Jobs.route) {
                 HomeScreen(
                     viewModel = homeViewModel,
-                    onJobClick = { /* Navigate to detail */ }
+                    onJobClick = { jobId -> onNavigateToJobDetail(jobId) }
                 )
             }
             composable(BottomNavItem.Profile.route) {
-                // Temporary placeholder for Profile
-                Surface(color = BackgroundLight) {
-                    androidx.compose.foundation.layout.Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = androidx.compose.ui.Alignment.Center
-                    ) {
-                        Button(onClick = onLogout, colors = ButtonDefaults.buttonColors(containerColor = BluePrimary)) {
-                            Text("Logout")
+                DashboardScreen(
+                    viewModel = dashboardViewModel,
+                    onApplicationClick = { jobId -> onNavigateToJobDetail(jobId) },
+                    onBrowseJobsClick = {
+                        navController.navigate(BottomNavItem.Jobs.route) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
                         }
-                    }
-                }
+                    },
+                    onLogout = onLogout
+                )
             }
         }
     }
@@ -80,7 +78,6 @@ fun MainScreen(
 @Composable
 fun BottomNavBar(navController: NavHostController) {
     val items = listOf(
-        BottomNavItem.Dashboard,
         BottomNavItem.Jobs,
         BottomNavItem.Profile
     )

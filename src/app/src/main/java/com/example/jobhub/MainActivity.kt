@@ -25,6 +25,10 @@ import com.example.jobhub.ui.theme.JOBHUBTheme
 import com.example.jobhub.ui.viewmodel.AuthViewModel
 import com.example.jobhub.ui.viewmodel.DashboardViewModel
 import com.example.jobhub.ui.viewmodel.HomeViewModel
+import com.example.jobhub.ui.viewmodel.JobDetailViewModel
+import com.example.jobhub.ui.screens.JobDetailScreen
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -75,6 +79,15 @@ fun JobHubApp() {
         }
     )
 
+    val jobDetailViewModel: JobDetailViewModel = viewModel(
+        factory = object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                return JobDetailViewModel(sessionManager) as T
+            }
+        }
+    )
+
     val navController = rememberNavController()
 
     // Cek apakah user sudah login atau belum
@@ -111,12 +124,26 @@ fun JobHubApp() {
             MainScreen(
                 dashboardViewModel = dashboardViewModel,
                 homeViewModel = homeViewModel,
+                onNavigateToJobDetail = { jobId ->
+                    navController.navigate("job-detail/$jobId")
+                },
                 onLogout = {
                     sessionManager.clearSession()
                     navController.navigate("login") {
                         popUpTo("main") { inclusive = true }
                     }
                 }
+            )
+        }
+        composable(
+            route = "job-detail/{jobId}",
+            arguments = listOf(navArgument("jobId") { type = NavType.IntType })
+        ) { backStackEntry ->
+            val jobId = backStackEntry.arguments?.getInt("jobId") ?: 0
+            JobDetailScreen(
+                viewModel = jobDetailViewModel,
+                jobId = jobId,
+                onBackClick = { navController.popBackStack() }
             )
         }
     }

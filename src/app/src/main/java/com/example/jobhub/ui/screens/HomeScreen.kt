@@ -8,14 +8,15 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.jobhub.data.model.JobListing
@@ -28,8 +29,6 @@ import com.example.jobhub.ui.viewmodel.HomeViewModel
 import java.text.NumberFormat
 import java.util.Locale
 
-import androidx.compose.runtime.LaunchedEffect
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
@@ -37,6 +36,7 @@ fun HomeScreen(
     onJobClick: (Int) -> Unit
 ) {
     val homeState by viewModel.homeState.collectAsState()
+    val searchQuery by viewModel.searchQuery.collectAsState()
 
     // Fetch jobs only when this screen is actually displayed
     LaunchedEffect(Unit) {
@@ -44,62 +44,167 @@ fun HomeScreen(
     }
 
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Job Listings", fontWeight = FontWeight.Bold, color = TextPrimaryLight) },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = BackgroundLight
-                ),
-                modifier = Modifier.shadow(2.dp)
-            )
-        },
         containerColor = BackgroundLight
     ) { paddingValues ->
-        Box(
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
+                .padding(paddingValues),
+            contentPadding = PaddingValues(bottom = 24.dp)
         ) {
+            // Header Hero Section
+            item {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color(0xFFF8FAFF))
+                        .padding(horizontal = 24.dp, vertical = 48.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "Temukan pekerjaan impianmu\nbersama ribuan perusahaan terbaik",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF1A237E),
+                        textAlign = TextAlign.Center,
+                        lineHeight = 32.sp
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = "Ribuan lowongan kerja dari perusahaan terpercaya di seluruh Indonesia",
+                        fontSize = 14.sp,
+                        color = TextSecondaryLight,
+                        textAlign = TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(32.dp))
+
+                    // Search Box
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .shadow(8.dp, RoundedCornerShape(12.dp)),
+                        shape = RoundedCornerShape(12.dp),
+                        color = Color.White
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(4.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            TextField(
+                                value = searchQuery,
+                                onValueChange = { viewModel.onSearchQueryChange(it) },
+                                placeholder = { Text("Posisi, keahlian, atau perusahaan...", fontSize = 14.sp) },
+                                modifier = Modifier.weight(1f),
+                                colors = TextFieldDefaults.colors(
+                                    focusedContainerColor = Color.Transparent,
+                                    unfocusedContainerColor = Color.Transparent,
+                                    disabledContainerColor = Color.Transparent,
+                                    focusedIndicatorColor = Color.Transparent,
+                                    unfocusedIndicatorColor = Color.Transparent
+                                ),
+                                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Color.Gray) },
+                                singleLine = true
+                            )
+                            Button(
+                                onClick = { /* Search is reactive via filterJobs() */ },
+                                shape = RoundedCornerShape(8.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = BluePrimary),
+                                modifier = Modifier.padding(end = 4.dp)
+                            ) {
+                                Text("Cari loker")
+                            }
+                        }
+                    }
+                    
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    // Popular Tags
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("Populer:", fontSize = 12.sp, color = TextSecondaryLight)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        listOf("UI/UX Designer", "Frontend Dev").forEach { tag ->
+                            Surface(
+                                color = Color(0xFFE8EAF6),
+                                shape = RoundedCornerShape(16.dp),
+                                modifier = Modifier.padding(horizontal = 4.dp)
+                            ) {
+                                Text(
+                                    text = tag,
+                                    fontSize = 10.sp,
+                                    color = BluePrimary,
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                    fontWeight = FontWeight.Medium
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Stats Section (Optional simplified)
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 32.dp, horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    StatMiniItem("17+", "Lowongan aktif")
+                    StatMiniItem("7+", "Perusahaan")
+                    StatMiniItem("98rb+", "Pelamar")
+                }
+            }
+
+            // Job Listings Section
+            item {
+                Text(
+                    text = if (searchQuery.isEmpty()) "Lowongan Terbaru" else "Hasil Pencarian: \"$searchQuery\"",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = TextPrimaryLight,
+                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp)
+                )
+            }
+
             when (homeState) {
                 is HomeState.Loading -> {
-                    CircularProgressIndicator(
-                        modifier = Modifier.align(Alignment.Center),
-                        color = BluePrimary
-                    )
+                    item {
+                        Box(modifier = Modifier.fillMaxWidth().height(200.dp), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator(color = BluePrimary)
+                        }
+                    }
                 }
                 is HomeState.Error -> {
-                    Column(
-                        modifier = Modifier.align(Alignment.Center),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            text = (homeState as HomeState.Error).message,
-                            color = MaterialTheme.colorScheme.error,
-                            modifier = Modifier.padding(16.dp)
-                        )
-                        Button(
-                            onClick = { viewModel.fetchJobs() },
-                            colors = ButtonDefaults.buttonColors(containerColor = BluePrimary)
+                    item {
+                        Column(
+                            modifier = Modifier.fillMaxWidth().padding(24.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Text("Retry")
+                            Text(text = (homeState as HomeState.Error).message, color = Color.Red)
+                            Button(onClick = { viewModel.fetchJobs() }) { Text("Retry") }
                         }
                     }
                 }
                 is HomeState.Success -> {
                     val jobs = (homeState as HomeState.Success).jobs
                     if (jobs.isEmpty()) {
-                        Text(
-                            text = "No jobs available at the moment.",
-                            color = TextSecondaryLight,
-                            modifier = Modifier.align(Alignment.Center)
-                        )
+                        item {
+                            Text(
+                                text = "Tidak ada lowongan yang sesuai.",
+                                modifier = Modifier.fillMaxWidth().padding(48.dp),
+                                textAlign = TextAlign.Center,
+                                color = TextSecondaryLight
+                            )
+                        }
                     } else {
-                        LazyColumn(
-                            contentPadding = PaddingValues(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(16.dp),
-                            modifier = Modifier.fillMaxSize()
-                        ) {
-                            items(jobs) { job ->
+                        items(jobs) { job ->
+                            Box(modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)) {
                                 JobCard(job = job, onClick = { onJobClick(job.id) })
                             }
                         }
@@ -107,6 +212,14 @@ fun HomeScreen(
                 }
             }
         }
+    }
+}
+
+@Composable
+fun StatMiniItem(value: String, label: String) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(text = value, fontWeight = FontWeight.Bold, color = BluePrimary, fontSize = 18.sp)
+        Text(text = label, fontSize = 12.sp, color = TextSecondaryLight)
     }
 }
 
