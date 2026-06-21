@@ -22,7 +22,30 @@ class HomeViewModel(private val sessionManager: SessionManager) : ViewModel() {
     private val _homeState = MutableStateFlow<HomeState>(HomeState.Loading)
     val homeState: StateFlow<HomeState> = _homeState.asStateFlow()
 
+    private var allJobs: List<JobListing> = emptyList()
     private var hasFetched = false
+
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery = _searchQuery.asStateFlow()
+
+    fun onSearchQueryChange(query: String) {
+        _searchQuery.value = query
+        filterJobs()
+    }
+
+    private fun filterJobs() {
+        val query = _searchQuery.value.lowercase()
+        if (query.isEmpty()) {
+            _homeState.value = HomeState.Success(allJobs)
+        } else {
+            val filtered = allJobs.filter {
+                it.title.lowercase().contains(query) ||
+                (it.company?.name?.lowercase()?.contains(query) == true) ||
+                it.location.lowercase().contains(query)
+            }
+            _homeState.value = HomeState.Success(filtered)
+        }
+    }
 
     fun fetchJobsIfNeeded() {
         if (!hasFetched) {
@@ -38,7 +61,8 @@ class HomeViewModel(private val sessionManager: SessionManager) : ViewModel() {
                 val response = apiService.getJobs()
                 if (response.isSuccessful && response.body() != null) {
                     val jobResponse = response.body()!!
-                    _homeState.value = HomeState.Success(jobResponse.data)
+                    allJobs = jobResponse.data
+                    filterJobs()
                 } else {
                     _homeState.value = HomeState.Error("Failed to load jobs: ${response.message()}")
                 }

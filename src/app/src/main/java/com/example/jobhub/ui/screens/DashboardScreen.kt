@@ -32,28 +32,29 @@ import java.util.Locale
 
 import androidx.compose.runtime.LaunchedEffect
 
+import androidx.compose.ui.graphics.Color
+import androidx.compose.material3.HorizontalDivider as Divider
+import androidx.compose.material.icons.filled.*
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.foundation.clickable
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
     viewModel: DashboardViewModel,
-    onApplicationClick: (Int) -> Unit
+    onApplicationClick: (Int) -> Unit,
+    onBrowseJobsClick: () -> Unit,
+    onLogout: () -> Unit
 ) {
     val dashboardState by viewModel.dashboardState.collectAsState()
 
-    // Fetch dashboard data only when this screen is actually displayed
     LaunchedEffect(Unit) {
         viewModel.fetchDashboardIfNeeded()
     }
+
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("My Dashboard", fontWeight = FontWeight.Bold, color = TextPrimaryLight) },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = BackgroundLight
-                ),
-                modifier = Modifier.shadow(2.dp)
-            )
-        },
         containerColor = BackgroundLight
     ) { paddingValues ->
         Box(
@@ -82,75 +83,197 @@ fun DashboardScreen(
                             onClick = { viewModel.fetchDashboard() },
                             colors = ButtonDefaults.buttonColors(containerColor = BluePrimary)
                         ) {
-                            Text("Retry")
+                            Text("Coba Lagi")
                         }
                     }
                 }
                 is DashboardState.Success -> {
-                    val data = (dashboardState as DashboardState.Success).data
+                    val state = dashboardState as DashboardState.Success
+                    val data = state.data
+                    val user = state.user
+
                     LazyColumn(
-                        contentPadding = PaddingValues(16.dp),
+                        contentPadding = PaddingValues(24.dp),
                         modifier = Modifier.fillMaxSize()
                     ) {
-                        item {
-                            Text(
-                                text = "Application Summary",
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = TextPrimaryLight,
-                                modifier = Modifier.padding(bottom = 16.dp)
-                            )
-                        }
-                        
+                        // Header Section
                         item {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.Top
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = "Dashboard Pelamar",
+                                        fontSize = 28.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFF1A237E) // Dark Blue
+                                    )
+                                    Text(
+                                        text = "Selamat datang kembali, pantau status lamaranmu di sini.",
+                                        fontSize = 14.sp,
+                                        color = TextSecondaryLight
+                                    )
+                                }
+
+                                Column(horizontalAlignment = Alignment.End) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Column(horizontalAlignment = Alignment.End, modifier = Modifier.padding(end = 12.dp)) {
+                                            Text(
+                                                text = user?.name ?: "User",
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = 14.sp,
+                                                color = TextPrimaryLight
+                                            )
+                                            Text(
+                                                text = user?.email ?: "",
+                                                fontSize = 12.sp,
+                                                color = TextSecondaryLight
+                                            )
+                                        }
+                                        IconButton(
+                                            onClick = onLogout,
+                                            modifier = Modifier
+                                                .size(40.dp)
+                                                .background(Color(0xFFFEEBEE), RoundedCornerShape(20.dp))
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Logout,
+                                                contentDescription = "Logout",
+                                                tint = Color.Red,
+                                                modifier = Modifier.size(20.dp)
+                                            )
+                                        }
+                                    }
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    Surface(
+                                        color = Color(0xFFE8EAF6),
+                                        shape = RoundedCornerShape(16.dp)
+                                    ) {
+                                        Text(
+                                            text = "PELAMAR AKTIF",
+                                            fontSize = 10.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = BluePrimary,
+                                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+                                        )
+                                    }
+                                }
+                            }
+                            Spacer(modifier = Modifier.height(32.dp))
+                        }
+
+                        // Stats Section
+                        item {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(16.dp)
                             ) {
                                 StatCard(
-                                    title = "Total",
+                                    title = "Total Dilamar",
                                     count = data.totalApplications,
-                                    icon = Icons.Default.Assignment,
+                                    icon = Icons.Default.Description,
+                                    iconBgColor = Color(0xFFE8EAF6),
                                     modifier = Modifier.weight(1f)
                                 )
                                 StatCard(
-                                    title = "Waiting",
+                                    title = "Menunggu",
                                     count = data.waitingApplications,
                                     icon = Icons.Default.HourglassEmpty,
+                                    iconBgColor = Color(0xFFFFF9C4),
                                     modifier = Modifier.weight(1f)
                                 )
                                 StatCard(
-                                    title = "Accepted",
+                                    title = "Diterima",
                                     count = data.acceptedApplications,
-                                    icon = Icons.Default.CheckCircle,
+                                    icon = Icons.Default.Celebration,
+                                    iconBgColor = Color(0xFFE8F5E9),
                                     modifier = Modifier.weight(1f)
                                 )
                             }
+                            Spacer(modifier = Modifier.height(32.dp))
                         }
 
+                        // Recent Applications Section
                         item {
-                            Spacer(modifier = Modifier.height(24.dp))
-                            Text(
-                                text = "Recent Applications",
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = TextPrimaryLight,
-                                modifier = Modifier.padding(bottom = 16.dp)
-                            )
-                        }
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(16.dp),
+                                colors = CardDefaults.cardColors(containerColor = Color.White),
+                                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                            ) {
+                                Column(modifier = Modifier.padding(24.dp)) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(
+                                            text = "Lamaran Terbaru",
+                                            fontSize = 18.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = TextPrimaryLight
+                                        )
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            modifier = Modifier.clickable { onBrowseJobsClick() }
+                                        ) {
+                                            Text(
+                                                text = "Lihat Semua",
+                                                fontSize = 12.sp,
+                                                color = BluePrimary,
+                                                fontWeight = FontWeight.SemiBold
+                                            )
+                                            Icon(
+                                                Icons.AutoMirrored.Filled.ArrowForward,
+                                                contentDescription = null,
+                                                modifier = Modifier.size(14.dp),
+                                                tint = BluePrimary
+                                            )
+                                        }
+                                    }
+                                    
+                                    Spacer(modifier = Modifier.height(24.dp))
+                                    
+                                    // Table Header
+                                    Row(modifier = Modifier.fillMaxWidth()) {
+                                        TableHeaderItem("LOWONGAN", Modifier.weight(1.5f))
+                                        TableHeaderItem("PERUSAHAAN", Modifier.weight(1.5f))
+                                        TableHeaderItem("TANGGAL LAMAR", Modifier.weight(1.5f))
+                                        TableHeaderItem("STATUS", Modifier.weight(1f))
+                                    }
+                                    
+                                    Divider(modifier = Modifier.padding(vertical = 12.dp), color = Color(0xFFF5F5F5))
 
-                        if (data.recentApplications.isEmpty()) {
-                            item {
-                                Text(
-                                    text = "You haven't applied to any jobs recently.",
-                                    color = TextSecondaryLight,
-                                    modifier = Modifier.padding(top = 16.dp)
-                                )
-                            }
-                        } else {
-                            items(data.recentApplications) { application ->
-                                ApplicationCard(application = application, onClick = { onApplicationClick(application.id) })
-                                Spacer(modifier = Modifier.height(12.dp))
+                                    if (data.recentApplications.isEmpty()) {
+                                        Column(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(vertical = 40.dp),
+                                            horizontalAlignment = Alignment.CenterHorizontally
+                                        ) {
+                                            Text(
+                                                text = "Belum ada lamaran terkirim.",
+                                                color = TextSecondaryLight,
+                                                fontSize = 14.sp
+                                            )
+                                            Spacer(modifier = Modifier.height(8.dp))
+                                            Text(
+                                                text = "Cari Lowongan Sekarang",
+                                                color = BluePrimary,
+                                                fontSize = 14.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                modifier = Modifier.clickable { onBrowseJobsClick() }
+                                            )
+                                        }
+                                    } else {
+                                        data.recentApplications.forEach { application ->
+                                            ApplicationRow(application, onClick = { onApplicationClick(application.jobListingId) })
+                                            Divider(color = Color(0xFFF5F5F5))
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -161,98 +284,108 @@ fun DashboardScreen(
 }
 
 @Composable
-fun StatCard(title: String, count: Int, icon: ImageVector, modifier: Modifier = Modifier) {
-    Card(
-        modifier = modifier,
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+fun TableHeaderItem(text: String, modifier: Modifier) {
+    Text(
+        text = text,
+        fontSize = 11.sp,
+        fontWeight = FontWeight.Bold,
+        color = TextSecondaryLight.copy(alpha = 0.6f),
+        modifier = modifier
+    )
+}
+
+@Composable
+fun ApplicationRow(application: Application, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
+            .padding(vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = title,
-                tint = BluePrimary,
-                modifier = Modifier.size(28.dp)
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = count.toString(),
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                color = TextPrimaryLight
-            )
-            Text(
-                text = title,
-                fontSize = 12.sp,
-                color = TextSecondaryLight
-            )
+        Text(
+            text = application.job_listing?.title ?: "-",
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Medium,
+            color = TextPrimaryLight,
+            modifier = Modifier.weight(1.5f)
+        )
+        Text(
+            text = application.job_listing?.company?.name ?: "-",
+            fontSize = 13.sp,
+            color = TextSecondaryLight,
+            modifier = Modifier.weight(1.5f)
+        )
+        Text(
+            text = application.createdAt?.take(10) ?: "-",
+            fontSize = 13.sp,
+            color = TextSecondaryLight,
+            modifier = Modifier.weight(1.5f)
+        )
+        
+        val statusColor = when(application.status.lowercase()) {
+            "accepted", "diterima" -> Color(0xFF4CAF50)
+            "rejected", "ditolak" -> Color(0xFFF44336)
+            else -> Color(0xFF9E9E9E)
         }
+        
+        Text(
+            text = application.status.uppercase(),
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Bold,
+            color = statusColor,
+            modifier = Modifier.weight(1f)
+        )
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ApplicationCard(application: Application, onClick: () -> Unit) {
+fun StatCard(
+    title: String, 
+    count: Int, 
+    icon: ImageVector, 
+    iconBgColor: Color,
+    modifier: Modifier = Modifier
+) {
     Card(
-        onClick = onClick,
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        modifier = Modifier.fillMaxWidth()
+        modifier = modifier.height(160.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(20.dp),
+            verticalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(
-                text = application.job_listing?.title ?: "Unknown Job",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                color = TextPrimaryLight
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = application.job_listing?.company?.name ?: "Unknown Company",
-                fontSize = 14.sp,
-                color = BluePrimary,
-                fontWeight = FontWeight.SemiBold
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+            Surface(
+                modifier = Modifier.size(40.dp),
+                shape = RoundedCornerShape(10.dp),
+                color = iconBgColor
             ) {
-                // Status Badge
-                val statusColor = when(application.status.lowercase()) {
-                    "accepted" -> MaterialTheme.colorScheme.primary
-                    "rejected" -> MaterialTheme.colorScheme.error
-                    else -> TextSecondaryLight
-                }
-                
-                Surface(
-                    color = statusColor.copy(alpha = 0.1f),
-                    shape = RoundedCornerShape(16.dp)
-                ) {
-                    Text(
-                        text = application.status.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() },
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = statusColor,
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = BluePrimary,
+                        modifier = Modifier.size(20.dp)
                     )
                 }
-
+            }
+            
+            Column {
                 Text(
-                    text = application.createdAt?.take(10) ?: "",
+                    text = title,
                     fontSize = 12.sp,
-                    color = TextSecondaryLight
+                    color = TextSecondaryLight,
+                    fontWeight = FontWeight.Medium
+                )
+                Text(
+                    text = count.toString(),
+                    fontSize = 32.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = TextPrimaryLight
                 )
             }
         }

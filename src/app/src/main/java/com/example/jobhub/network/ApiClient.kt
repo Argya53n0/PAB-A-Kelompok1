@@ -40,8 +40,9 @@ object ApiClient {
                 requestBuilder.addHeader("Authorization", "Bearer $token")
             }
             
-            // Required for Laravel API to return JSON instead of redirecting to login page
+            // Memastikan server menerima dan mengirim JSON
             requestBuilder.addHeader("Accept", "application/json")
+            requestBuilder.addHeader("Content-Type", "application/json")
 
             chain.proceed(requestBuilder.build())
         }
