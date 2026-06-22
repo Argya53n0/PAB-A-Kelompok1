@@ -30,6 +30,8 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.jobhub.ui.theme.BackgroundLight
 import com.example.jobhub.ui.theme.BluePrimary
+import com.example.jobhub.ui.viewmodel.ApplicationsViewModel
+import com.example.jobhub.ui.viewmodel.BookmarksViewModel
 import com.example.jobhub.ui.viewmodel.DashboardViewModel
 import com.example.jobhub.ui.viewmodel.HomeViewModel
 import com.example.jobhub.ui.viewmodel.ProfileViewModel
@@ -45,6 +47,8 @@ fun MainScreen(
     dashboardViewModel: DashboardViewModel,
     homeViewModel: HomeViewModel,
     profileViewModel: ProfileViewModel,
+    applicationsViewModel: ApplicationsViewModel,
+    bookmarksViewModel: BookmarksViewModel,
     onNavigateToJobDetail: (Int) -> Unit,
     onLogout: () -> Unit
 ) {
@@ -52,14 +56,30 @@ fun MainScreen(
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
     
+    // Determine if we're on a main tab (show top & bottom bars) or a sub-screen
+    val mainRoutes = listOf(
+        BottomNavItem.Jobs.route,
+        BottomNavItem.Dashboard.route,
+        BottomNavItem.Profile.route
+    )
+    val isMainRoute = currentRoute in mainRoutes
+
     Scaffold(
         topBar = {
             @OptIn(ExperimentalMaterial3Api::class)
-            if (currentRoute != BottomNavItem.Profile.route) {
+            if (isMainRoute && currentRoute != BottomNavItem.Profile.route) {
                 CenterAlignedTopAppBar(
                     title = { Text("JOBHUB", fontWeight = FontWeight.Bold, color = BluePrimary) },
                     navigationIcon = {
-                        IconButton(onClick = { /* TODO: Search action */ }) {
+                        IconButton(onClick = {
+                            navController.navigate(BottomNavItem.Jobs.route) {
+                                popUpTo(navController.graph.findStartDestination().id) {
+                                    saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        }) {
                             Icon(
                                 imageVector = Icons.Default.Search,
                                 contentDescription = "Search",
@@ -95,7 +115,9 @@ fun MainScreen(
             }
         },
         bottomBar = {
-            BottomNavBar(navController = navController)
+            if (isMainRoute) {
+                BottomNavBar(navController = navController)
+            }
         }
     ) { innerPadding ->
         NavHost(
@@ -122,6 +144,12 @@ fun MainScreen(
                             restoreState = true
                         }
                     },
+                    onViewAllApplicationsClick = {
+                        navController.navigate("applications")
+                    },
+                    onViewBookmarksClick = {
+                        navController.navigate("bookmarks")
+                    },
                     onLogout = onLogout
                 )
             }
@@ -129,6 +157,20 @@ fun MainScreen(
                 ProfileScreen(
                     viewModel = profileViewModel,
                     onLogout = onLogout
+                )
+            }
+            composable("applications") {
+                ApplicationsScreen(
+                    viewModel = applicationsViewModel,
+                    onBackClick = { navController.popBackStack() },
+                    onApplicationClick = { jobId -> onNavigateToJobDetail(jobId) }
+                )
+            }
+            composable("bookmarks") {
+                BookmarksScreen(
+                    viewModel = bookmarksViewModel,
+                    onBackClick = { navController.popBackStack() },
+                    onJobClick = { jobId -> onNavigateToJobDetail(jobId) }
                 )
             }
         }

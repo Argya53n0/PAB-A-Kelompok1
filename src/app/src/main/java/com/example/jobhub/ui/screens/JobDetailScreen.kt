@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.UploadFile
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.filled.Work
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -56,6 +57,7 @@ fun JobDetailScreen(
     val jobDetailState by viewModel.jobDetailState.collectAsState()
     val applyJobState by viewModel.applyJobState.collectAsState()
     val userProfile by viewModel.userProfile.collectAsState()
+    val isBookmarked by viewModel.isBookmarked.collectAsState()
 
     var showApplyDialog by remember { mutableStateOf(false) }
     var coverLetter by remember { mutableStateOf("") }
@@ -85,6 +87,7 @@ fun JobDetailScreen(
     LaunchedEffect(jobId) {
         viewModel.fetchJobDetail(jobId)
         viewModel.fetchUserProfile()
+        viewModel.checkBookmarkStatus(jobId)
     }
 
     // Handle apply state side effects
@@ -127,10 +130,10 @@ fun JobDetailScreen(
                             tint = BluePrimary
                         )
                     }
-                    IconButton(onClick = { /* TODO: Implement bookmark */ }) {
+                    IconButton(onClick = { viewModel.toggleBookmark(jobId) }) {
                         Icon(
-                            imageVector = Icons.Default.BookmarkBorder,
-                            contentDescription = "Simpan",
+                            imageVector = if (isBookmarked) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,
+                            contentDescription = if (isBookmarked) "Hapus Simpanan" else "Simpan",
                             tint = BluePrimary
                         )
                     }

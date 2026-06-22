@@ -23,6 +23,8 @@ import com.example.jobhub.ui.screens.MainScreen
 import com.example.jobhub.ui.screens.RegisterScreen
 import com.example.jobhub.ui.theme.JOBHUBTheme
 import com.example.jobhub.ui.viewmodel.AuthViewModel
+import com.example.jobhub.ui.viewmodel.ApplicationsViewModel
+import com.example.jobhub.ui.viewmodel.BookmarksViewModel
 import com.example.jobhub.ui.viewmodel.DashboardViewModel
 import com.example.jobhub.ui.viewmodel.HomeViewModel
 import com.example.jobhub.ui.viewmodel.JobDetailViewModel
@@ -98,6 +100,24 @@ fun JobHubApp() {
         }
     )
 
+    val applicationsViewModel: ApplicationsViewModel = viewModel(
+        factory = object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                return ApplicationsViewModel(sessionManager) as T
+            }
+        }
+    )
+
+    val bookmarksViewModel: BookmarksViewModel = viewModel(
+        factory = object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                return BookmarksViewModel(sessionManager) as T
+            }
+        }
+    )
+
     val navController = rememberNavController()
 
     // Cek apakah user sudah login atau belum
@@ -135,6 +155,8 @@ fun JobHubApp() {
                 dashboardViewModel = dashboardViewModel,
                 homeViewModel = homeViewModel,
                 profileViewModel = profileViewModel,
+                applicationsViewModel = applicationsViewModel,
+                bookmarksViewModel = bookmarksViewModel,
                 onNavigateToJobDetail = { jobId ->
                     navController.navigate("job-detail/$jobId")
                 },
