@@ -21,6 +21,10 @@ import com.example.jobhub.data.local.SessionManager
 import com.example.jobhub.ui.screens.LoginScreen
 import com.example.jobhub.ui.screens.MainScreen
 import com.example.jobhub.ui.screens.RegisterScreen
+import com.example.jobhub.ui.screens.ApplicationsScreen
+import com.example.jobhub.ui.screens.BookmarksScreen
+import com.example.jobhub.ui.screens.SplashScreen
+import com.example.jobhub.ui.screens.WelcomeScreen
 import com.example.jobhub.ui.theme.JOBHUBTheme
 import com.example.jobhub.ui.viewmodel.AuthViewModel
 import com.example.jobhub.ui.viewmodel.ApplicationsViewModel
@@ -120,14 +124,28 @@ fun JobHubApp() {
 
     val navController = rememberNavController()
 
-    // Cek apakah user sudah login atau belum
-    val startDestination = if (sessionManager.fetchAuthToken() != null) {
-        "main"
-    } else {
-        "login"
-    }
+    // Cek apakah user sudah login atau belum (untuk SplashScreen)
+    val startDestination = "splash"
 
     NavHost(navController = navController, startDestination = startDestination) {
+        composable("splash") {
+            SplashScreen(
+                onSplashFinished = {
+                    val nextRoute = if (sessionManager.fetchAuthToken() != null) "main" else "welcome"
+                    navController.navigate(nextRoute) {
+                        popUpTo("splash") { inclusive = true }
+                    }
+                }
+            )
+        }
+        
+        composable("welcome") {
+            WelcomeScreen(
+                onNavigateToLogin = { navController.navigate("login") },
+                onNavigateToRegister = { navController.navigate("register") }
+            )
+        }
+        
         composable("login") {
             LoginScreen(
                 viewModel = authViewModel,

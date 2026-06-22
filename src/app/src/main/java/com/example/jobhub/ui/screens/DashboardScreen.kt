@@ -6,9 +6,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Assignment
 import androidx.compose.material.icons.filled.Assignment
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.HourglassEmpty
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -150,14 +152,14 @@ fun DashboardScreen(
 
                         // Quick Access Panel
                         item {
-                            Row(
+                            Column(
                                 modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                verticalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
                                 // Status Lamaran button
                                 Card(
                                     modifier = Modifier
-                                        .weight(1f)
+                                        .fillMaxWidth()
                                         .clickable { onViewAllApplicationsClick() },
                                     shape = RoundedCornerShape(16.dp),
                                     colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -177,33 +179,38 @@ fun DashboardScreen(
                                         ) {
                                             Box(contentAlignment = Alignment.Center) {
                                                 Icon(
-                                                    imageVector = Icons.Default.Assignment,
+                                                    imageVector = Icons.AutoMirrored.Filled.Assignment,
                                                     contentDescription = null,
                                                     tint = BluePrimary,
                                                     modifier = Modifier.size(20.dp)
                                                 )
                                             }
                                         }
-                                        Column {
+                                        Column(modifier = Modifier.weight(1f)) {
                                             Text(
                                                 text = "Status Lamaran",
                                                 fontWeight = FontWeight.Bold,
-                                                fontSize = 13.sp,
+                                                fontSize = 14.sp,
                                                 color = TextPrimaryLight
                                             )
                                             Text(
-                                                text = "Lihat semua lamaran",
-                                                fontSize = 11.sp,
+                                                text = "Lihat semua lamaran yang telah dikirim",
+                                                fontSize = 12.sp,
                                                 color = TextSecondaryLight
                                             )
                                         }
+                                        Icon(
+                                            imageVector = Icons.Default.ChevronRight,
+                                            contentDescription = null,
+                                            tint = TextSecondaryLight
+                                        )
                                     }
                                 }
 
                                 // Lowongan Tersimpan button
                                 Card(
                                     modifier = Modifier
-                                        .weight(1f)
+                                        .fillMaxWidth()
                                         .clickable { onViewBookmarksClick() },
                                     shape = RoundedCornerShape(16.dp),
                                     colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -230,19 +237,24 @@ fun DashboardScreen(
                                                 )
                                             }
                                         }
-                                        Column {
+                                        Column(modifier = Modifier.weight(1f)) {
                                             Text(
-                                                text = "Tersimpan",
+                                                text = "Lowongan Tersimpan",
                                                 fontWeight = FontWeight.Bold,
-                                                fontSize = 13.sp,
+                                                fontSize = 14.sp,
                                                 color = TextPrimaryLight
                                             )
                                             Text(
-                                                text = "Lowongan favorit",
-                                                fontSize = 11.sp,
+                                                text = "Lihat lowongan yang kamu favoritkan",
+                                                fontSize = 12.sp,
                                                 color = TextSecondaryLight
                                             )
                                         }
+                                        Icon(
+                                            imageVector = Icons.Default.ChevronRight,
+                                            contentDescription = null,
+                                            tint = TextSecondaryLight
+                                        )
                                     }
                                 }
                             }
@@ -323,8 +335,8 @@ fun DashboardScreen(
                                     // Table Header
                                     Row(modifier = Modifier.fillMaxWidth()) {
                                         TableHeaderItem("LOWONGAN", Modifier.weight(1.5f))
-                                        TableHeaderItem("PERUSAHAAN", Modifier.weight(1.5f))
-                                        TableHeaderItem("TANGGAL LAMAR", Modifier.weight(1.5f))
+                                        TableHeaderItem("PERUSAHAAN", Modifier.weight(1.2f))
+                                        TableHeaderItem("TANGGAL", Modifier.weight(1.2f))
                                         TableHeaderItem("STATUS", Modifier.weight(1f))
                                     }
                                     
@@ -395,22 +407,26 @@ fun ApplicationRow(application: Application, onClick: () -> Unit) {
     ) {
         Text(
             text = application.job_listing?.title ?: "-",
-            fontSize = 13.sp,
+            fontSize = 12.sp,
             fontWeight = FontWeight.Medium,
             color = TextPrimaryLight,
-            modifier = Modifier.weight(1.5f)
+            modifier = Modifier.weight(1.5f),
+            maxLines = 2,
+            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
         )
         Text(
             text = application.job_listing?.company?.name ?: "-",
-            fontSize = 13.sp,
+            fontSize = 12.sp,
             color = TextSecondaryLight,
-            modifier = Modifier.weight(1.5f)
+            modifier = Modifier.weight(1.2f),
+            maxLines = 1,
+            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
         )
         Text(
             text = application.createdAt?.take(10) ?: "-",
-            fontSize = 13.sp,
+            fontSize = 12.sp,
             color = TextSecondaryLight,
-            modifier = Modifier.weight(1.5f)
+            modifier = Modifier.weight(1.2f)
         )
         
         val statusColor = when(application.status.lowercase()) {
@@ -421,10 +437,12 @@ fun ApplicationRow(application: Application, onClick: () -> Unit) {
         
         Text(
             text = application.status.uppercase(),
-            fontSize = 11.sp,
+            fontSize = 10.sp,
             fontWeight = FontWeight.Bold,
             color = statusColor,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
+            maxLines = 1,
+            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
         )
     }
 }

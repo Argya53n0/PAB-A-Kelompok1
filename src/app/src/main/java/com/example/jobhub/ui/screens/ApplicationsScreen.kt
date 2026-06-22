@@ -12,6 +12,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -34,6 +37,10 @@ fun ApplicationsScreen(
     onApplicationClick: (Int) -> Unit
 ) {
     val state by viewModel.applicationsState.collectAsState()
+    val selectedFilter by viewModel.selectedFilter.collectAsState()
+    val filters = listOf("Semua", "Menunggu", "Diterima", "Ditolak")
+
+    var applicationToCancel by remember { mutableStateOf<Application?>(null) }
 
     LaunchedEffect(Unit) {
         viewModel.fetchApplications()
@@ -55,11 +62,39 @@ fun ApplicationsScreen(
         },
         containerColor = BackgroundLight
     ) { paddingValues ->
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
+            // Filter Tabs
+            androidx.compose.foundation.lazy.LazyRow(
+                modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                contentPadding = PaddingValues(horizontal = 16.dp)
+            ) {
+                items(filters.size) { index ->
+                    val filter = filters[index]
+                    val isSelected = selectedFilter == filter
+                    
+                    Surface(
+                        color = if (isSelected) BluePrimary else Color.White,
+                        shape = RoundedCornerShape(20.dp),
+                        modifier = Modifier.clickable { viewModel.onFilterSelected(filter) },
+                        border = if (!isSelected) androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFEEEEEE)) else null
+                    ) {
+                        Text(
+                            text = filter,
+                            color = if (isSelected) Color.White else TextSecondaryLight,
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                            fontSize = 13.sp
+                        )
+                    }
+                }
+            }
+
+            Box(modifier = Modifier.weight(1f)) {
             when (state) {
                 is ApplicationsState.Loading -> {
                     CircularProgressIndicator(
@@ -94,22 +129,49 @@ fun ApplicationsScreen(
                         }
                     } else {
                         LazyColumn(
-                            contentPadding = PaddingValues(16.dp),
+                            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 16.dp),
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             items(applications) { application ->
-                                ApplicationCard(application = application, onClick = { onApplicationClick(application.jobListingId) })
+                                ApplicationCard(
+                                    application = application, 
+                                    onClick = { onApplicationClick(application.jobListingId) },
+                                    onCancelClick = { applicationToCancel = application }
+                                )
                             }
                         }
                     }
                 }
             }
         }
+        }
+        
+        // Cancel Confirmation Dialog
+        applicationToCancel?.let { app ->
+            AlertDialog(
+                onDismissRequest = { applicationToCancel = null },
+                title = { Text("Batalkan Lamaran") },
+                text = { Text("Apakah kamu yakin ingin membatalkan lamaran untuk posisi ${app.job_listing?.title} di ${app.job_listing?.company?.name}?") },
+                confirmButton = {
+                    TextButton(onClick = {
+                        viewModel.cancelApplication(app.id)
+                        applicationToCancel = null
+                    }) {
+                        Text("Ya, Batalkan", color = Color.Red)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { applicationToCancel = null }) {
+                        Text("Tidak")
+                    }
+                }
+            )
+        }
     }
 }
 
 @Composable
-fun ApplicationCard(application: Application, onClick: () -> Unit) {
+fun ApplicationCard(application: Application, onClick: () -> Unit, onCancelClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -162,6 +224,18 @@ fun ApplicationCard(application: Application, onClick: () -> Unit) {
                         color = statusColor,
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
                     )
+                }
+            }
+            
+            if (application.status.lowercase() == "waiting") {
+                Spacer(modifier = Modifier.height(12.dp))
+                HorizontalDivider(color = Color(0xFFF5F5F5))
+                Spacer(modifier = Modifier.height(8.dp))
+                TextButton(
+                    onClick = onCancelClick,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Batalkan Lamaran", color = Color.Red, fontWeight = FontWeight.SemiBold)
                 }
             }
         }
