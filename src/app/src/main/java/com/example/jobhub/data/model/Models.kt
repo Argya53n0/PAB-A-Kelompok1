@@ -6,18 +6,22 @@ data class User(
     val id: Int,
     val name: String,
     val email: String,
-    val role: String? = null
+    val role: String? = null,
+    @SerializedName("job_seeker") val jobSeeker: JobSeekerProfile? = null
 )
 
 data class JobSeekerProfile(
     val id: Int,
     @SerializedName("user_id") val userId: Int,
     val resume: String?,
+    @SerializedName("cv_path") val cvPath: String?,
     val skills: String?,
     val experience: String?,
     val education: String?,
     val phone: String?,
-    val address: String?
+    val address: String?,
+    val description: String?,
+    @SerializedName("profile_picture") val profilePicture: String?
 )
 
 data class Company(

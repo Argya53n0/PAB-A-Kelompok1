@@ -48,16 +48,25 @@ interface ApiService {
     @GET("job-seeker/profile")
     suspend fun getProfile(): Response<User>
 
-    @Multipart
     @POST("job-seeker/profile")
     suspend fun updateProfile(
-        @Part("skills") skills: RequestBody?,
-        @Part("experience") experience: RequestBody?,
-        @Part("education") education: RequestBody?,
-        @Part("phone") phone: RequestBody?,
-        @Part("address") address: RequestBody?,
-        @Part resume: MultipartBody.Part?
+        @Body request: Map<String, String>
     ): Response<ProfileUpdateResponse>
+
+    @Multipart
+    @POST("job-seeker/profile")
+    suspend fun updateProfileWithFile(
+        @Part("name") name: RequestBody,
+        @Part("phone") phone: RequestBody,
+        @Part resume: MultipartBody.Part? = null,
+        @Part profilePicture: MultipartBody.Part? = null
+    ): Response<ProfileUpdateResponse>
+
+    @DELETE("job-seeker/profile/photo")
+    suspend fun deleteProfilePicture(): Response<ProfileUpdateResponse>
+
+    @DELETE("job-seeker/profile/cv")
+    suspend fun deleteCv(): Response<ProfileUpdateResponse>
 
     // Applications
     @GET("job-seeker/applications")

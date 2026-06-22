@@ -25,21 +25,12 @@ php artisan serve
 *(Server akan berjalan di `http://127.0.0.1:8000`)*
 
 ### 2. Atur Koneksi API (Sangat Penting!)
-Secara kodingan, aplikasi ini **sudah nol konfigurasi (zero config)**. Kamu tidak perlu gonta-ganti IP Address di dalam kode. Aplikasi sudah diatur untuk otomatis mendeteksi apakah kamu memakai Emulator atau HP Asli.
+Untuk saat ini, aplikasi mobile telah dikonfigurasi **HANYA untuk dijalankan di Emulator Android Studio**.
 
-- **Opsi A: Pakai Emulator (Android Studio / AVD)**
-  Aplikasi akan otomatis menggunakan IP `10.0.2.2`. Kamu **tidak perlu melakukan konfigurasi tambahan apapun**. Langsung *Run* saja aplikasinya.
+- **Pakai Emulator (Android Studio / AVD)**
+  Aplikasi menggunakan IP `10.0.2.2` secara default. Kamu **tidak perlu melakukan konfigurasi tambahan apapun**. Emulator akan otomatis terhubung ke *localhost* laptopmu (`127.0.0.1`). Langsung *Run* saja aplikasinya menggunakan *virtual device*!
 
-- **Opsi B: Pakai HP Asli (Lewat kabel USB)**
-  Aplikasi akan otomatis menggunakan `127.0.0.1` (*localhost* HP). Agar *localhost* HP bisa tersambung ke *localhost* laptop, kamu **wajib** menjalankan 1 baris perintah ini di terminal (hanya 1x selama dicolok):
-  
-  ```bash
-  adb reverse tcp:8000 tcp:8000
-  ```
-  > **💡 Solusi jika error 'adb is not recognized':**
-  > Artinya path ADB belum disetting di Windows. Kamu bisa pakai path lengkap (sesuaikan username PC kamu):
-  > `& "C:\Users\%USERNAME%\AppData\Local\Android\Sdk\platform-tools\adb.exe" reverse tcp:8000 tcp:8000`
-
+> ⚠️ **Peringatan:** Jangan jalankan di HP Asli (fisik) untuk sementara waktu, karena kodenya sedang di-*lock* khusus untuk IP Emulator.
 
 ### 3. Cara Menjalankan Aplikasi (Build & Run)
 Buka folder `src` di **Android Studio** dan tunggu sampai proses *Gradle Sync* (loading di bagian bawah) selesai. Setelah itu, ikuti panduan sesuai perangkat yang kamu pilih:
@@ -52,12 +43,3 @@ Buka folder `src` di **Android Studio** dan tunggu sampai proses *Gradle Sync* (
 5. Klik tombol **Run 'app' (▶️ hijau)** di menu atas.
 6. Tunggu proses build selesai dan aplikasi akan terbuka otomatis di Emulator.
 
-#### Menjalankan di HP Asli (Physical Device)
-1. Siapkan kabel data (USB) dan sambungkan HP kamu ke laptop.
-2. Di HP, masuk ke **Pengaturan (Settings) -> Opsi Pengembang (Developer Options)**. *(Jika belum ada, buka Tentang Ponsel/About Phone, lalu ketuk 'Build Number' 7 kali).*
-3. Aktifkan **USB Debugging** di dalam menu Opsi Pengembang.
-4. Akan muncul *popup* konfirmasi di layar HP-mu yang meminta izin USB debugging dari komputer, pilih **Izinkan (Allow)**.
-5. Pastikan nama HP-mu muncul di menu drop-down perangkat di bagian atas Android Studio (sebelah tombol Run).
-6. **[PENTING]** Jalankan perintah `adb reverse tcp:8000 tcp:8000` di terminal seperti yang dijelaskan pada langkah 2 di atas.
-7. Klik tombol **Run 'app' (▶️ hijau)**. Aplikasi akan di-install dan terbuka di HP-mu.
-8. Silakan login menggunakan akun pelamar yang ada di database! 🎉
