@@ -28,17 +28,8 @@ class DashboardViewModel(private val sessionManager: SessionManager) : ViewModel
 
     val statuses = listOf("Semua", "Waiting", "Accepted", "Rejected")
 
-    private var hasFetched = false
-
     fun onStatusSelected(status: String) {
         _selectedStatus.value = status
-    }
-
-    fun fetchDashboardIfNeeded() {
-        if (!hasFetched) {
-            hasFetched = true
-            fetchDashboard()
-        }
     }
 
     fun fetchDashboard() {

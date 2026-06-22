@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Assignment
+import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.HourglassEmpty
 import androidx.compose.material3.*
@@ -46,12 +47,14 @@ fun DashboardScreen(
     viewModel: DashboardViewModel,
     onApplicationClick: (Int) -> Unit,
     onBrowseJobsClick: () -> Unit,
+    onViewAllApplicationsClick: () -> Unit,
+    onViewBookmarksClick: () -> Unit,
     onLogout: () -> Unit
 ) {
     val dashboardState by viewModel.dashboardState.collectAsState()
 
     LaunchedEffect(Unit) {
-        viewModel.fetchDashboardIfNeeded()
+        viewModel.fetchDashboard()
     }
 
     Scaffold(
@@ -142,7 +145,108 @@ fun DashboardScreen(
                                     modifier = Modifier.weight(1f)
                                 )
                             }
-                            Spacer(modifier = Modifier.height(32.dp))
+                            Spacer(modifier = Modifier.height(24.dp))
+                        }
+
+                        // Quick Access Panel
+                        item {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                // Status Lamaran button
+                                Card(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .clickable { onViewAllApplicationsClick() },
+                                    shape = RoundedCornerShape(16.dp),
+                                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                                ) {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(16.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                    ) {
+                                        Surface(
+                                            modifier = Modifier.size(40.dp),
+                                            shape = RoundedCornerShape(10.dp),
+                                            color = Color(0xFFE3F2FD)
+                                        ) {
+                                            Box(contentAlignment = Alignment.Center) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Assignment,
+                                                    contentDescription = null,
+                                                    tint = BluePrimary,
+                                                    modifier = Modifier.size(20.dp)
+                                                )
+                                            }
+                                        }
+                                        Column {
+                                            Text(
+                                                text = "Status Lamaran",
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = 13.sp,
+                                                color = TextPrimaryLight
+                                            )
+                                            Text(
+                                                text = "Lihat semua lamaran",
+                                                fontSize = 11.sp,
+                                                color = TextSecondaryLight
+                                            )
+                                        }
+                                    }
+                                }
+
+                                // Lowongan Tersimpan button
+                                Card(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .clickable { onViewBookmarksClick() },
+                                    shape = RoundedCornerShape(16.dp),
+                                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                                ) {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(16.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                    ) {
+                                        Surface(
+                                            modifier = Modifier.size(40.dp),
+                                            shape = RoundedCornerShape(10.dp),
+                                            color = Color(0xFFFFF3E0)
+                                        ) {
+                                            Box(contentAlignment = Alignment.Center) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Bookmark,
+                                                    contentDescription = null,
+                                                    tint = Color(0xFFFF9800),
+                                                    modifier = Modifier.size(20.dp)
+                                                )
+                                            }
+                                        }
+                                        Column {
+                                            Text(
+                                                text = "Tersimpan",
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = 13.sp,
+                                                color = TextPrimaryLight
+                                            )
+                                            Text(
+                                                text = "Lowongan favorit",
+                                                fontSize = 11.sp,
+                                                color = TextSecondaryLight
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                            Spacer(modifier = Modifier.height(24.dp))
                         }
 
                         // Recent Applications Section

@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.jobhub.data.local.SessionManager
 import com.example.jobhub.data.model.JobListing
 import com.example.jobhub.data.model.User
+import com.example.jobhub.data.model.Bookmark
 import com.example.jobhub.network.ApiClient
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -43,6 +44,9 @@ class JobDetailViewModel(private val sessionManager: SessionManager) : ViewModel
 
     private val _userProfile = MutableStateFlow<User?>(null)
     val userProfile: StateFlow<User?> = _userProfile.asStateFlow()
+
+    private val _isBookmarked = MutableStateFlow(false)
+    val isBookmarked: StateFlow<Boolean> = _isBookmarked.asStateFlow()
 
     fun fetchJobDetail(jobId: Int) {
         viewModelScope.launch {
@@ -117,6 +121,33 @@ class JobDetailViewModel(private val sessionManager: SessionManager) : ViewModel
 
     fun resetApplyState() {
         _applyJobState.value = ApplyJobState.Idle
+    }
+
+    fun checkBookmarkStatus(jobId: Int) {
+        viewModelScope.launch {
+            try {
+                val response = apiService.getBookmarks()
+                if (response.isSuccessful && response.body() != null) {
+                    val bookmarks = response.body()!!
+                    _isBookmarked.value = bookmarks.any { it.jobListingId == jobId }
+                }
+            } catch (_: Exception) {
+                // Silently fail
+            }
+        }
+    }
+
+    fun toggleBookmark(jobId: Int) {
+        viewModelScope.launch {
+            try {
+                val response = apiService.toggleBookmark(jobId)
+                if (response.isSuccessful && response.body() != null) {
+                    _isBookmarked.value = response.body()!!.isBookmarked
+                }
+            } catch (_: Exception) {
+                // Silently fail
+            }
+        }
     }
 
     private fun getFileName(context: Context, uri: Uri): String? {

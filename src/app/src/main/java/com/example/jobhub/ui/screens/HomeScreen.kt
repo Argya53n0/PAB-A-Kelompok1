@@ -30,6 +30,8 @@ import com.example.jobhub.ui.viewmodel.HomeViewModel
 import java.text.NumberFormat
 import java.util.Locale
 
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
@@ -38,6 +40,7 @@ fun HomeScreen(
 ) {
     val homeState by viewModel.homeState.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     // Fetch jobs only when this screen is actually displayed
     LaunchedEffect(Unit) {
@@ -109,7 +112,10 @@ fun HomeScreen(
                                 singleLine = true
                             )
                             Button(
-                                onClick = { /* Search is reactive via filterJobs() */ },
+                                onClick = {
+                                    keyboardController?.hide()
+                                    viewModel.performSearch()
+                                },
                                 shape = RoundedCornerShape(8.dp),
                                 colors = ButtonDefaults.buttonColors(containerColor = BluePrimary),
                                 modifier = Modifier.padding(end = 4.dp)

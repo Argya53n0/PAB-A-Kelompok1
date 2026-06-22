@@ -65,6 +65,10 @@ class HomeViewModel(private val sessionManager: SessionManager) : ViewModel() {
         _homeState.value = HomeState.Success(filtered)
     }
 
+    fun performSearch() {
+        fetchJobs(_searchQuery.value)
+    }
+
     fun fetchJobsIfNeeded() {
         if (!hasFetched) {
             hasFetched = true
@@ -72,18 +76,20 @@ class HomeViewModel(private val sessionManager: SessionManager) : ViewModel() {
         }
     }
 
-    fun fetchJobs() {
+    fun fetchJobs(query: String? = null) {
         viewModelScope.launch {
             _homeState.value = HomeState.Loading
             try {
-                val response = apiService.getJobs()
+                val response = apiService.getJobs(search = query?.takeIf { it.isNotEmpty() })
                 if (response.isSuccessful && response.body() != null) {
                     val jobResponse = response.body()!!
                     allJobs = jobResponse.data
                     
-                    // Extract unique categories
-                    val uniqueCategories = allJobs.mapNotNull { it.category?.name }.distinct()
-                    _categories.value = listOf("Semua") + uniqueCategories
+                    // Only extract categories on initial load without search query
+                    if (query.isNullOrEmpty()) {
+                        val uniqueCategories = allJobs.mapNotNull { it.category?.name }.distinct()
+                        _categories.value = listOf("Semua") + uniqueCategories
+                    }
                     
                     filterJobs()
                 } else {

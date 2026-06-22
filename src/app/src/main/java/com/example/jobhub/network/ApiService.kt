@@ -36,7 +36,9 @@ interface ApiService {
     suspend fun getMe(): Response<User>
 
     @GET("jobs")
-    suspend fun getJobs(): Response<JobResponse>
+    suspend fun getJobs(
+        @retrofit2.http.Query("search") search: String? = null
+    ): Response<JobResponse>
 
     @GET("jobs/{id}")
     suspend fun getJobDetail(@Path("id") id: Int): Response<JobListing>
