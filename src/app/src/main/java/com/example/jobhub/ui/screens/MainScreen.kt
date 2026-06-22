@@ -23,6 +23,7 @@ import com.example.jobhub.ui.theme.BackgroundLight
 import com.example.jobhub.ui.theme.BluePrimary
 import com.example.jobhub.ui.viewmodel.DashboardViewModel
 import com.example.jobhub.ui.viewmodel.HomeViewModel
+import com.example.jobhub.ui.viewmodel.ProfileViewModel
 
 sealed class BottomNavItem(val route: String, val title: String, val icon: ImageVector) {
     object Dashboard : BottomNavItem("dashboard", "Dashboard", Icons.Default.Dashboard)
@@ -34,6 +35,7 @@ sealed class BottomNavItem(val route: String, val title: String, val icon: Image
 fun MainScreen(
     dashboardViewModel: DashboardViewModel,
     homeViewModel: HomeViewModel,
+    profileViewModel: ProfileViewModel,
     onNavigateToJobDetail: (Int) -> Unit,
     onLogout: () -> Unit
 ) {
@@ -55,7 +57,7 @@ fun MainScreen(
                     onJobClick = { jobId -> onNavigateToJobDetail(jobId) }
                 )
             }
-            composable(BottomNavItem.Profile.route) {
+            composable(BottomNavItem.Dashboard.route) {
                 DashboardScreen(
                     viewModel = dashboardViewModel,
                     onApplicationClick = { jobId -> onNavigateToJobDetail(jobId) },
@@ -71,6 +73,12 @@ fun MainScreen(
                     onLogout = onLogout
                 )
             }
+            composable(BottomNavItem.Profile.route) {
+                ProfileScreen(
+                    viewModel = profileViewModel,
+                    onLogout = onLogout
+                )
+            }
         }
     }
 }
@@ -79,6 +87,7 @@ fun MainScreen(
 fun BottomNavBar(navController: NavHostController) {
     val items = listOf(
         BottomNavItem.Jobs,
+        BottomNavItem.Dashboard,
         BottomNavItem.Profile
     )
     

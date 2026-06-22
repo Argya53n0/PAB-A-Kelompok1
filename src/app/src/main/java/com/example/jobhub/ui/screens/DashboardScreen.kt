@@ -98,70 +98,20 @@ fun DashboardScreen(
                     ) {
                         // Header Section
                         item {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.Top
-                            ) {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(
-                                        text = "Dashboard Pelamar",
-                                        fontSize = 28.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color(0xFF1A237E) // Dark Blue
-                                    )
-                                    Text(
-                                        text = "Selamat datang kembali, pantau status lamaranmu di sini.",
-                                        fontSize = 14.sp,
-                                        color = TextSecondaryLight
-                                    )
-                                }
-
-                                Column(horizontalAlignment = Alignment.End) {
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Column(horizontalAlignment = Alignment.End, modifier = Modifier.padding(end = 12.dp)) {
-                                            Text(
-                                                text = user?.name ?: "User",
-                                                fontWeight = FontWeight.Bold,
-                                                fontSize = 14.sp,
-                                                color = TextPrimaryLight
-                                            )
-                                            Text(
-                                                text = user?.email ?: "",
-                                                fontSize = 12.sp,
-                                                color = TextSecondaryLight
-                                            )
-                                        }
-                                        IconButton(
-                                            onClick = onLogout,
-                                            modifier = Modifier
-                                                .size(40.dp)
-                                                .background(Color(0xFFFEEBEE), RoundedCornerShape(20.dp))
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.Default.Logout,
-                                                contentDescription = "Logout",
-                                                tint = Color.Red,
-                                                modifier = Modifier.size(20.dp)
-                                            )
-                                        }
-                                    }
-                                    Spacer(modifier = Modifier.height(8.dp))
-                                    Surface(
-                                        color = Color(0xFFE8EAF6),
-                                        shape = RoundedCornerShape(16.dp)
-                                    ) {
-                                        Text(
-                                            text = "PELAMAR AKTIF",
-                                            fontSize = 10.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = BluePrimary,
-                                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
-                                        )
-                                    }
-                                }
+                            Column(modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)) {
+                                Text(
+                                    text = "Dashboard Pelamar",
+                                    fontSize = 28.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF1A237E) // Dark Blue
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = "Selamat datang kembali, pantau status lamaranmu di sini.",
+                                    fontSize = 14.sp,
+                                    color = TextSecondaryLight
+                                )
                             }
-                            Spacer(modifier = Modifier.height(32.dp))
                         }
 
                         // Stats Section
