@@ -36,7 +36,9 @@ class HomeViewModel(private val sessionManager: SessionManager) : ViewModel() {
 
     fun onSearchQueryChange(query: String) {
         _searchQuery.value = query
-        filterJobs()
+        if (query.isEmpty()) {
+            fetchJobs(null)
+        }
     }
 
     fun onCategorySelected(category: String) {
@@ -45,21 +47,12 @@ class HomeViewModel(private val sessionManager: SessionManager) : ViewModel() {
     }
 
     private fun filterJobs() {
-        val query = _searchQuery.value.lowercase()
         val category = _selectedCategory.value
 
         var filtered = allJobs
 
         if (category != "Semua") {
             filtered = filtered.filter { it.category?.name == category }
-        }
-
-        if (query.isNotEmpty()) {
-            filtered = filtered.filter {
-                it.title.lowercase().contains(query) ||
-                (it.company?.name?.lowercase()?.contains(query) == true) ||
-                it.location.lowercase().contains(query)
-            }
         }
 
         _homeState.value = HomeState.Success(filtered)

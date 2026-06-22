@@ -5,11 +5,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Work
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -29,7 +29,6 @@ import com.example.jobhub.ui.viewmodel.HomeState
 import com.example.jobhub.ui.viewmodel.HomeViewModel
 import java.text.NumberFormat
 import java.util.Locale
-
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -54,7 +53,7 @@ fun HomeScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues),
-            contentPadding = PaddingValues(bottom = 24.dp)
+            contentPadding = PaddingValues(bottom = 80.dp)
         ) {
             // Header Hero Section
             item {
@@ -86,8 +85,8 @@ fun HomeScreen(
                     Surface(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .shadow(8.dp, RoundedCornerShape(12.dp)),
-                        shape = RoundedCornerShape(12.dp),
+                            .shadow(8.dp, androidx.compose.foundation.shape.RoundedCornerShape(12.dp)),
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
                         color = Color.White
                     ) {
                         Row(
@@ -116,7 +115,7 @@ fun HomeScreen(
                                     keyboardController?.hide()
                                     viewModel.performSearch()
                                 },
-                                shape = RoundedCornerShape(8.dp),
+                                shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
                                 colors = ButtonDefaults.buttonColors(containerColor = BluePrimary),
                                 modifier = Modifier.padding(end = 4.dp)
                             ) {
@@ -136,12 +135,13 @@ fun HomeScreen(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         contentPadding = PaddingValues(horizontal = 4.dp)
                     ) {
-                        items(categories) { category ->
+                        items(categories.size) { index ->
+                            val category = categories[index]
                             val isSelected = selectedCategory == category
                             
                             Surface(
                                 color = if (isSelected) BluePrimary else Color(0xFFE8EAF6),
-                                shape = RoundedCornerShape(20.dp),
+                                shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
                                 modifier = Modifier.clickable { viewModel.onCategorySelected(category) }
                             ) {
                                 Text(
@@ -157,7 +157,7 @@ fun HomeScreen(
                 }
             }
 
-            // Stats Section (Optional simplified)
+            // Stats Section
             item {
                 Row(
                     modifier = Modifier
@@ -238,7 +238,7 @@ fun StatMiniItem(value: String, label: String) {
 fun JobCard(job: JobListing, onClick: () -> Unit) {
     Card(
         onClick = onClick,
-        shape = RoundedCornerShape(12.dp),
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         modifier = Modifier.fillMaxWidth()
@@ -248,68 +248,78 @@ fun JobCard(job: JobListing, onClick: () -> Unit) {
         ) {
             Text(
                 text = job.title,
-                fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                color = TextPrimaryLight
+                fontSize = 16.sp,
+                color = TextPrimaryLight,
+                maxLines = 2,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = job.company?.name ?: "Unknown Company",
+                text = job.company?.name ?: "-",
                 fontSize = 14.sp,
                 color = BluePrimary,
-                fontWeight = FontWeight.SemiBold
+                fontWeight = FontWeight.Medium,
+                maxLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
             )
             Spacer(modifier = Modifier.height(12.dp))
-            
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    imageVector = Icons.Default.LocationOn,
-                    contentDescription = "Location",
-                    tint = TextSecondaryLight,
-                    modifier = Modifier.size(16.dp)
-                )
-                Spacer(modifier = Modifier.width(4.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        Icons.Default.LocationOn,
+                        contentDescription = null,
+                        modifier = Modifier.size(14.dp),
+                        tint = TextSecondaryLight
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = job.location,
+                        fontSize = 12.sp,
+                        color = TextSecondaryLight,
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                        modifier = Modifier.widthIn(max = 120.dp)
+                    )
+                }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        Icons.Default.Work,
+                        contentDescription = null,
+                        modifier = Modifier.size(14.dp),
+                        tint = TextSecondaryLight
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = (job.employment_type ?: "Full-time").replaceFirstChar { it.uppercase() },
+                        fontSize = 12.sp,
+                        color = TextSecondaryLight
+                    )
+                }
+            }
+
+            // Salary
+            if (job.salary_min != null || job.salary_max != null) {
+                Spacer(modifier = Modifier.height(12.dp))
+                val fmt = NumberFormat.getCurrencyInstance(Locale("id", "ID"))
+                val salaryText = when {
+                    job.salary_min != null && job.salary_max != null ->
+                        "${fmt.format(job.salary_min)} - ${fmt.format(job.salary_max)}"
+                    job.salary_min != null -> "Min ${fmt.format(job.salary_min)}"
+                    else -> "Maks ${fmt.format(job.salary_max)}"
+                }
                 Text(
-                    text = "${job.location} • ${job.work_type?.capitalize() ?: "On-site"}",
-                    fontSize = 12.sp,
-                    color = TextSecondaryLight
+                    text = salaryText,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color(0xFF2E7D32)
                 )
             }
-            
-            Spacer(modifier = Modifier.height(4.dp))
-            
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    imageVector = Icons.Default.Person,
-                    contentDescription = "Job Type",
-                    tint = TextSecondaryLight,
-                    modifier = Modifier.size(16.dp)
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(
-                    text = job.employment_type?.capitalize() ?: "Full-time",
-                    fontSize = 12.sp,
-                    color = TextSecondaryLight
-                )
-            }
-            
-            Spacer(modifier = Modifier.height(12.dp))
-            
-            // Format Salary
-            val salaryText = if (job.salary_min != null && job.salary_max != null) {
-                val format = NumberFormat.getCurrencyInstance(Locale("id", "ID"))
-                format.maximumFractionDigits = 0
-                "${format.format(job.salary_min)} - ${format.format(job.salary_max)}"
-            } else {
-                "Salary not disclosed"
-            }
-            
-            Text(
-                text = salaryText,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold,
-                color = TextPrimaryLight
-            )
         }
     }
 }
