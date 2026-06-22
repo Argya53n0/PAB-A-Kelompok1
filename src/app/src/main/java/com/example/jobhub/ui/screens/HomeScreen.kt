@@ -1,6 +1,7 @@
 package com.example.jobhub.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -120,26 +121,29 @@ fun HomeScreen(
                     
                     Spacer(modifier = Modifier.height(16.dp))
                     
-                    // Popular Tags
-                    Row(
+                    val categories by viewModel.categories.collectAsState()
+                    val selectedCategory by viewModel.selectedCategory.collectAsState()
+
+                    // Category Filter Bar
+                    androidx.compose.foundation.lazy.LazyRow(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        contentPadding = PaddingValues(horizontal = 4.dp)
                     ) {
-                        Text("Populer:", fontSize = 12.sp, color = TextSecondaryLight)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        listOf("UI/UX Designer", "Frontend Dev").forEach { tag ->
+                        items(categories) { category ->
+                            val isSelected = selectedCategory == category
+                            
                             Surface(
-                                color = Color(0xFFE8EAF6),
-                                shape = RoundedCornerShape(16.dp),
-                                modifier = Modifier.padding(horizontal = 4.dp)
+                                color = if (isSelected) BluePrimary else Color(0xFFE8EAF6),
+                                shape = RoundedCornerShape(20.dp),
+                                modifier = Modifier.clickable { viewModel.onCategorySelected(category) }
                             ) {
                                 Text(
-                                    text = tag,
-                                    fontSize = 10.sp,
-                                    color = BluePrimary,
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                                    fontWeight = FontWeight.Medium
+                                    text = category,
+                                    fontSize = 13.sp,
+                                    color = if (isSelected) Color.White else TextSecondaryLight,
+                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
                                 )
                             }
                         }

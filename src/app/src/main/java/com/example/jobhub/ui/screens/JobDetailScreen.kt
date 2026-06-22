@@ -1,20 +1,32 @@
 package com.example.jobhub.ui.screens
 
+import android.net.Uri
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.UploadFile
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.filled.Work
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -43,13 +55,36 @@ fun JobDetailScreen(
     val context = LocalContext.current
     val jobDetailState by viewModel.jobDetailState.collectAsState()
     val applyJobState by viewModel.applyJobState.collectAsState()
+    val userProfile by viewModel.userProfile.collectAsState()
 
     var showApplyDialog by remember { mutableStateOf(false) }
     var coverLetter by remember { mutableStateOf("") }
+    var selectedCvUri by remember { mutableStateOf<Uri?>(null) }
+    var selectedCvFileName by remember { mutableStateOf<String?>(null) }
 
-    // Fetch detail on load
+    // File picker for CV
+    val cvPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        if (uri != null) {
+            selectedCvUri = uri
+            // Get file name from URI
+            val cursor = context.contentResolver.query(uri, null, null, null, null)
+            cursor?.use {
+                if (it.moveToFirst()) {
+                    val nameIndex = it.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
+                    if (nameIndex >= 0) {
+                        selectedCvFileName = it.getString(nameIndex)
+                    }
+                }
+            }
+        }
+    }
+
+    // Fetch detail and user profile on load
     LaunchedEffect(jobId) {
         viewModel.fetchJobDetail(jobId)
+        viewModel.fetchUserProfile()
     }
 
     // Handle apply state side effects
@@ -60,6 +95,8 @@ fun JobDetailScreen(
                 Toast.makeText(context, message, Toast.LENGTH_LONG).show()
                 showApplyDialog = false
                 coverLetter = ""
+                selectedCvUri = null
+                selectedCvFileName = null
                 viewModel.resetApplyState()
             }
             is ApplyJobState.Error -> {
@@ -71,19 +108,35 @@ fun JobDetailScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Detail Pekerjaan", fontWeight = FontWeight.Bold, color = TextPrimaryLight) },
+            CenterAlignedTopAppBar(
+                title = { Text("JOBHUB", fontWeight = FontWeight.Bold, color = BluePrimary) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
                             contentDescription = "Kembali",
-                            tint = TextPrimaryLight
+                            tint = BluePrimary
                         )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = BackgroundLight
+                actions = {
+                    IconButton(onClick = { /* TODO: Implement share */ }) {
+                        Icon(
+                            imageVector = Icons.Default.Share,
+                            contentDescription = "Share",
+                            tint = BluePrimary
+                        )
+                    }
+                    IconButton(onClick = { /* TODO: Implement bookmark */ }) {
+                        Icon(
+                            imageVector = Icons.Default.BookmarkBorder,
+                            contentDescription = "Simpan",
+                            tint = BluePrimary
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = Color.White
                 ),
                 modifier = Modifier.shadow(2.dp)
             )
@@ -292,14 +345,19 @@ fun JobDetailScreen(
             }
         }
 
-        // Apply Job Dialog
+        // Apply Job Dialog with CV Upload Support
         if (showApplyDialog) {
             val job = (jobDetailState as? JobDetailState.Success)?.job
             if (job != null) {
+                val profileCvPath = userProfile?.jobSeeker?.cvPath ?: userProfile?.jobSeeker?.resume
+                val hasProfileCv = profileCvPath != null
+
                 AlertDialog(
                     onDismissRequest = {
                         if (applyJobState != ApplyJobState.Loading) {
                             showApplyDialog = false
+                            selectedCvUri = null
+                            selectedCvFileName = null
                             viewModel.resetApplyState()
                         }
                     },
@@ -314,34 +372,218 @@ fun JobDetailScreen(
                     text = {
                         Column {
                             Text(
-                                text = "Tulis surat lamaran singkat (Cover Letter) Anda di bawah ini:",
-                                fontSize = 14.sp,
+                                text = "Lengkapi data berikut untuk melamar posisi ini",
+                                fontSize = 13.sp,
                                 color = TextSecondaryLight,
-                                modifier = Modifier.padding(bottom = 12.dp)
+                                modifier = Modifier.padding(bottom = 16.dp)
+                            )
+
+                            // Cover Letter Field
+                            Text(
+                                text = "Cover Letter",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = TextPrimaryLight,
+                                modifier = Modifier.padding(bottom = 6.dp)
                             )
                             OutlinedTextField(
                                 value = coverLetter,
                                 onValueChange = { coverLetter = it },
-                                label = { Text("Cover Letter") },
-                                modifier = Modifier.fillMaxWidth().height(120.dp),
+                                placeholder = { Text("Ceritakan mengapa Anda cocok untuk posisi ini...", fontSize = 13.sp) },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(120.dp),
                                 maxLines = 5,
-                                enabled = applyJobState != ApplyJobState.Loading
+                                enabled = applyJobState != ApplyJobState.Loading,
+                                shape = RoundedCornerShape(12.dp)
                             )
-                            if (applyJobState is ApplyJobState.Error) {
-                                Text(
-                                    text = (applyJobState as ApplyJobState.Error).message,
-                                    color = MaterialTheme.colorScheme.error,
-                                    fontSize = 12.sp,
-                                    modifier = Modifier.padding(top = 8.dp)
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            // CV Section
+                            Text(
+                                text = "CV / Resume",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = TextPrimaryLight,
+                                modifier = Modifier.padding(bottom = 6.dp)
+                            )
+
+                            // Profile CV Status
+                            if (hasProfileCv && selectedCvUri == null) {
+                                Surface(
+                                    color = Color(0xFFE8F5E9),
+                                    shape = RoundedCornerShape(10.dp),
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(12.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.CheckCircle,
+                                            contentDescription = null,
+                                            tint = Color(0xFF4CAF50),
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                        Spacer(Modifier.width(8.dp))
+                                        Column(modifier = Modifier.weight(1f)) {
+                                            Text(
+                                                text = "Menggunakan CV dari Profil",
+                                                fontSize = 12.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color(0xFF2E7D32)
+                                            )
+                                            Text(
+                                                text = profileCvPath!!.substringAfterLast("/"),
+                                                fontSize = 11.sp,
+                                                color = Color(0xFF4CAF50)
+                                            )
+                                        }
+                                    }
+                                }
+                            } else if (!hasProfileCv && selectedCvUri == null) {
+                                Surface(
+                                    color = Color(0xFFFFF3E0),
+                                    shape = RoundedCornerShape(10.dp),
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(12.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Warning,
+                                            contentDescription = null,
+                                            tint = Color(0xFFE65100),
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                        Spacer(Modifier.width(8.dp))
+                                        Text(
+                                            text = "Belum ada CV di profil. Upload CV di bawah ini.",
+                                            fontSize = 12.sp,
+                                            fontWeight = FontWeight.Medium,
+                                            color = Color(0xFFE65100),
+                                            modifier = Modifier.weight(1f)
+                                        )
+                                    }
+                                }
+                            }
+
+                            // Selected CV file indicator
+                            if (selectedCvUri != null) {
+                                Surface(
+                                    color = BluePrimary.copy(alpha = 0.08f),
+                                    shape = RoundedCornerShape(10.dp),
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(12.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Description,
+                                            contentDescription = null,
+                                            tint = BluePrimary,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                        Spacer(Modifier.width(8.dp))
+                                        Column(modifier = Modifier.weight(1f)) {
+                                            Text(
+                                                text = "CV Baru Terpilih",
+                                                fontSize = 12.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = BluePrimary
+                                            )
+                                            Text(
+                                                text = selectedCvFileName ?: "File terpilih",
+                                                fontSize = 11.sp,
+                                                color = BluePrimary.copy(alpha = 0.7f)
+                                            )
+                                        }
+                                        // Remove selected CV button
+                                        IconButton(
+                                            onClick = {
+                                                selectedCvUri = null
+                                                selectedCvFileName = null
+                                            },
+                                            modifier = Modifier.size(24.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Close,
+                                                contentDescription = "Hapus CV",
+                                                tint = BluePrimary,
+                                                modifier = Modifier.size(16.dp)
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            // Upload CV Button
+                            OutlinedButton(
+                                onClick = { cvPickerLauncher.launch("application/pdf") },
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(10.dp),
+                                enabled = applyJobState != ApplyJobState.Loading
+                            ) {
+                                Icon(
+                                    Icons.Default.UploadFile,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp)
                                 )
+                                Spacer(Modifier.width(6.dp))
+                                Text(
+                                    text = if (selectedCvUri != null) "Ganti CV" else if (hasProfileCv) "Upload CV Lain (Opsional)" else "Upload CV (PDF)",
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
+
+                            if (hasProfileCv && selectedCvUri == null) {
+                                Text(
+                                    text = "Kosongkan jika ingin menggunakan CV dari profil Anda.",
+                                    fontSize = 11.sp,
+                                    color = TextSecondaryLight,
+                                    modifier = Modifier.padding(top = 4.dp)
+                                )
+                            }
+
+                            // Error message
+                            if (applyJobState is ApplyJobState.Error) {
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Surface(
+                                    color = Color(0xFFFEEBEE),
+                                    shape = RoundedCornerShape(8.dp),
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Text(
+                                        text = (applyJobState as ApplyJobState.Error).message,
+                                        color = Color(0xFFC62828),
+                                        fontSize = 12.sp,
+                                        modifier = Modifier.padding(10.dp)
+                                    )
+                                }
                             }
                         }
                     },
                     confirmButton = {
                         Button(
-                            onClick = { viewModel.applyJob(job.id, coverLetter) },
-                            enabled = applyJobState != ApplyJobState.Loading && coverLetter.isNotBlank(),
-                            colors = ButtonDefaults.buttonColors(containerColor = BluePrimary)
+                            onClick = {
+                                viewModel.applyJob(
+                                    jobId = job.id,
+                                    coverLetter = coverLetter,
+                                    cvUri = selectedCvUri,
+                                    context = if (selectedCvUri != null) context else null
+                                )
+                            },
+                            enabled = applyJobState != ApplyJobState.Loading
+                                    && coverLetter.isNotBlank()
+                                    && (hasProfileCv || selectedCvUri != null),
+                            colors = ButtonDefaults.buttonColors(containerColor = BluePrimary),
+                            shape = RoundedCornerShape(10.dp)
                         ) {
                             if (applyJobState == ApplyJobState.Loading) {
                                 CircularProgressIndicator(
@@ -349,8 +591,10 @@ fun JobDetailScreen(
                                     modifier = Modifier.size(20.dp),
                                     strokeWidth = 2.dp
                                 )
+                                Spacer(Modifier.width(8.dp))
+                                Text("Mengirim...", color = Color.White)
                             } else {
-                                Text("Kirim Lamaran", color = Color.White)
+                                Text("Kirim Lamaran", color = Color.White, fontWeight = FontWeight.Bold)
                             }
                         }
                     },
@@ -358,6 +602,8 @@ fun JobDetailScreen(
                         TextButton(
                             onClick = {
                                 showApplyDialog = false
+                                selectedCvUri = null
+                                selectedCvFileName = null
                                 viewModel.resetApplyState()
                             },
                             enabled = applyJobState != ApplyJobState.Loading
