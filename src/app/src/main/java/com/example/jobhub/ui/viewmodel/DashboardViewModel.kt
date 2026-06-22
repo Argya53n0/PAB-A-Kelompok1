@@ -23,7 +23,16 @@ class DashboardViewModel(private val sessionManager: SessionManager) : ViewModel
     private val _dashboardState = MutableStateFlow<DashboardState>(DashboardState.Loading)
     val dashboardState: StateFlow<DashboardState> = _dashboardState.asStateFlow()
 
+    private val _selectedStatus = MutableStateFlow("Semua")
+    val selectedStatus = _selectedStatus.asStateFlow()
+
+    val statuses = listOf("Semua", "Waiting", "Accepted", "Rejected")
+
     private var hasFetched = false
+
+    fun onStatusSelected(status: String) {
+        _selectedStatus.value = status
+    }
 
     fun fetchDashboardIfNeeded() {
         if (!hasFetched) {

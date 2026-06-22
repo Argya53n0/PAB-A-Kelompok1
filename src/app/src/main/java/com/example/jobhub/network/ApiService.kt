@@ -78,6 +78,14 @@ interface ApiService {
         @Body request: Map<String, String> // e.g., cover_letter
     ): Response<ApplyJobResponse>
 
+    @Multipart
+    @POST("job-seeker/apply/{jobListing}")
+    suspend fun applyJobWithCv(
+        @Path("jobListing") jobId: Int,
+        @Part("cover_letter") coverLetter: RequestBody,
+        @Part cvFile: MultipartBody.Part
+    ): Response<ApplyJobResponse>
+
     @DELETE("job-seeker/applications/{application}")
     suspend fun deleteApplication(@Path("application") applicationId: Int): Response<Map<String, String>>
 

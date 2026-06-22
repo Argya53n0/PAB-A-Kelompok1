@@ -1,15 +1,23 @@
 package com.example.jobhub.ui.viewmodel
 
+import android.content.Context
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.jobhub.data.local.SessionManager
 import com.example.jobhub.data.model.JobListing
+import com.example.jobhub.data.model.User
 import com.example.jobhub.network.ApiClient
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
+import java.io.File
 
 sealed class JobDetailState {
     object Loading : JobDetailState()
@@ -33,6 +41,9 @@ class JobDetailViewModel(private val sessionManager: SessionManager) : ViewModel
     private val _applyJobState = MutableStateFlow<ApplyJobState>(ApplyJobState.Idle)
     val applyJobState: StateFlow<ApplyJobState> = _applyJobState.asStateFlow()
 
+    private val _userProfile = MutableStateFlow<User?>(null)
+    val userProfile: StateFlow<User?> = _userProfile.asStateFlow()
+
     fun fetchJobDetail(jobId: Int) {
         viewModelScope.launch {
             _jobDetailState.value = JobDetailState.Loading
@@ -50,12 +61,48 @@ class JobDetailViewModel(private val sessionManager: SessionManager) : ViewModel
         }
     }
 
-    fun applyJob(jobId: Int, coverLetter: String) {
+    fun fetchUserProfile() {
+        viewModelScope.launch {
+            try {
+                val response = apiService.getProfile()
+                if (response.isSuccessful && response.body() != null) {
+                    _userProfile.value = response.body()!!
+                }
+            } catch (_: Exception) {
+                // Silently fail - profile info is supplementary
+            }
+        }
+    }
+
+    fun applyJob(jobId: Int, coverLetter: String, cvUri: Uri? = null, context: Context? = null) {
         viewModelScope.launch {
             _applyJobState.value = ApplyJobState.Loading
             try {
-                val request = mapOf("cover_letter" to coverLetter)
-                val response = apiService.applyJob(jobId, request)
+                val response = if (cvUri != null && context != null) {
+                    // Multipart upload with CV file
+                    val coverLetterPart = coverLetter.toRequestBody("text/plain".toMediaTypeOrNull())
+
+                    val inputStream = context.contentResolver.openInputStream(cvUri)
+                    val fileName = getFileName(context, cvUri) ?: "resume.pdf"
+                    val tempFile = File(context.cacheDir, fileName)
+                    inputStream?.use { input ->
+                        tempFile.outputStream().use { output ->
+                            input.copyTo(output)
+                        }
+                    }
+
+                    val requestFile = tempFile.asRequestBody("application/pdf".toMediaTypeOrNull())
+                    val cvPart = MultipartBody.Part.createFormData("cv_path", fileName, requestFile)
+
+                    val result = apiService.applyJobWithCv(jobId, coverLetterPart, cvPart)
+                    tempFile.delete()
+                    result
+                } else {
+                    // Simple JSON request (uses profile CV)
+                    val request = mapOf("cover_letter" to coverLetter)
+                    apiService.applyJob(jobId, request)
+                }
+
                 if (response.isSuccessful && response.body() != null) {
                     _applyJobState.value = ApplyJobState.Success(response.body()!!.message)
                 } else {
@@ -70,6 +117,20 @@ class JobDetailViewModel(private val sessionManager: SessionManager) : ViewModel
 
     fun resetApplyState() {
         _applyJobState.value = ApplyJobState.Idle
+    }
+
+    private fun getFileName(context: Context, uri: Uri): String? {
+        var name: String? = null
+        val cursor = context.contentResolver.query(uri, null, null, null, null)
+        cursor?.use {
+            if (it.moveToFirst()) {
+                val nameIndex = it.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
+                if (nameIndex >= 0) {
+                    name = it.getString(nameIndex)
+                }
+            }
+        }
+        return name
     }
 
     private fun parseErrorBody(errorBody: okhttp3.ResponseBody?, fallback: String): String {

@@ -184,7 +184,37 @@ fun DashboardScreen(
                                         }
                                     }
                                     
-                                    Spacer(modifier = Modifier.height(24.dp))
+                                    Spacer(modifier = Modifier.height(16.dp))
+
+                                    val selectedStatus by viewModel.selectedStatus.collectAsState()
+                                    val statuses = viewModel.statuses
+
+                                    // Status Filter Bar
+                                    androidx.compose.foundation.lazy.LazyRow(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                        contentPadding = PaddingValues(horizontal = 4.dp)
+                                    ) {
+                                        items(statuses) { status ->
+                                            val isSelected = selectedStatus == status
+                                            
+                                            Surface(
+                                                color = if (isSelected) BluePrimary else Color(0xFFE8EAF6),
+                                                shape = RoundedCornerShape(20.dp),
+                                                modifier = Modifier.clickable { viewModel.onStatusSelected(status) }
+                                            ) {
+                                                Text(
+                                                    text = status,
+                                                    fontSize = 12.sp,
+                                                    color = if (isSelected) Color.White else TextSecondaryLight,
+                                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
+                                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+                                                )
+                                            }
+                                        }
+                                    }
+
+                                    Spacer(modifier = Modifier.height(16.dp))
                                     
                                     // Table Header
                                     Row(modifier = Modifier.fillMaxWidth()) {
@@ -196,7 +226,13 @@ fun DashboardScreen(
                                     
                                     Divider(modifier = Modifier.padding(vertical = 12.dp), color = Color(0xFFF5F5F5))
 
-                                    if (data.recentApplications.isEmpty()) {
+                                    val filteredApplications = if (selectedStatus == "Semua") {
+                                        data.recentApplications
+                                    } else {
+                                        data.recentApplications.filter { it.status.equals(selectedStatus, ignoreCase = true) }
+                                    }
+
+                                    if (filteredApplications.isEmpty()) {
                                         Column(
                                             modifier = Modifier
                                                 .fillMaxWidth()
@@ -218,7 +254,7 @@ fun DashboardScreen(
                                             )
                                         }
                                     } else {
-                                        data.recentApplications.forEach { application ->
+                                        filteredApplications.forEach { application ->
                                             ApplicationRow(application, onClick = { onApplicationClick(application.jobListingId) })
                                             Divider(color = Color(0xFFF5F5F5))
                                         }
