@@ -9,9 +9,10 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
 object ApiClient {
-    // PERHATIAN: Aplikasi ini dikonfigurasi SEMENTARA untuk dijalankan di EMULATOR saja.
-    // Menggunakan IP 10.0.2.2 yang otomatis terhubung ke localhost laptop (127.0.0.1)
-    private val BASE_URL: String = "http://10.0.2.2:8000/api/"
+    // PERHATIAN: Menggunakan IP lokal laptop agar bisa diakses dari HP fisik via WiFi
+    // Pastikan laptop dan HP terhubung ke jaringan WiFi yang sama
+    // Untuk emulator, ganti ke: http://10.0.2.2:8000/api/
+    private val BASE_URL: String = "http://192.168.100.203:8000/api/"
 
     fun getApiService(sessionManager: SessionManager): ApiService {
         val loggingInterceptor = HttpLoggingInterceptor().apply {
@@ -27,9 +28,14 @@ object ApiClient {
                 requestBuilder.addHeader("Authorization", "Bearer $token")
             }
             
-            // Memastikan server menerima dan mengirim JSON
+            // Accept JSON responses
             requestBuilder.addHeader("Accept", "application/json")
-            requestBuilder.addHeader("Content-Type", "application/json")
+            
+            // Hanya set Content-Type JSON untuk request non-multipart
+            // Untuk multipart (upload file), Content-Type di-set otomatis oleh OkHttp
+            if (req.body !is okhttp3.MultipartBody) {
+                requestBuilder.addHeader("Content-Type", "application/json")
+            }
 
             chain.proceed(requestBuilder.build())
         }

@@ -99,15 +99,27 @@ class ProfileViewModel(private val sessionManager: SessionManager) : ViewModel()
                 loadingState.value = true
                 try {
                     val inputStream = context.contentResolver.openInputStream(uri)
+                    if (inputStream == null) {
+                        _profileState.value = ProfileState.Success(
+                            user = currentState.user,
+                            updateMessage = "Gagal membuka file"
+                        )
+                        return@launch
+                    }
+
                     val fileName = getFileName(context, uri) ?: if (partName == "resume") "resume.pdf" else "photo.jpg"
                     val tempFile = File(context.cacheDir, fileName)
-                    inputStream?.use { input ->
+                    inputStream.use { input ->
                         tempFile.outputStream().use { output ->
                             input.copyTo(output)
                         }
                     }
 
-                    val mediaTypeStr = if (partName == "resume") "application/pdf" else "image/*"
+                    // Detect MIME type from content resolver, fallback to common types
+                    val detectedMimeType = context.contentResolver.getType(uri)
+                    val mediaTypeStr = detectedMimeType
+                        ?: if (partName == "resume") "application/pdf" else "image/jpeg"
+                    
                     val requestFile = tempFile.asRequestBody(mediaTypeStr.toMediaTypeOrNull())
                     val filePart = MultipartBody.Part.createFormData(partName, fileName, requestFile)
 
@@ -127,15 +139,17 @@ class ProfileViewModel(private val sessionManager: SessionManager) : ViewModel()
                         )
                         fetchProfile()
                     } else {
+                        val errorBody = response.errorBody()?.string() ?: "Unknown error"
                         _profileState.value = ProfileState.Success(
                             user = currentState.user,
-                            updateMessage = "Gagal mengupload file"
+                            updateMessage = "Gagal mengupload: ${response.code()} - $errorBody"
                         )
                     }
                     tempFile.delete()
                 } catch (e: Exception) {
+                    val user = ((_profileState.value as? ProfileState.Success)?.user) ?: currentState.user
                     _profileState.value = ProfileState.Success(
-                        user = currentState.user,
+                        user = user,
                         updateMessage = "Error: ${e.localizedMessage}"
                     )
                 } finally {
