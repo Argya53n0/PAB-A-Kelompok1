@@ -333,11 +333,37 @@ fun DashboardScreen(
                                     Spacer(modifier = Modifier.height(16.dp))
                                     
                                     // Table Header
-                                    Row(modifier = Modifier.fillMaxWidth()) {
-                                        TableHeaderItem("LOWONGAN", Modifier.weight(1.5f))
-                                        TableHeaderItem("PERUSAHAAN", Modifier.weight(1.2f))
-                                        TableHeaderItem("TANGGAL", Modifier.weight(1.2f))
-                                        TableHeaderItem("STATUS", Modifier.weight(1f))
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(horizontal = 4.dp)
+                                    ) {
+                                        Text(
+                                            text = "LOWONGAN",
+                                            fontSize = 10.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = TextSecondaryLight.copy(alpha = 0.6f),
+                                            modifier = Modifier.weight(2f),
+                                            maxLines = 1
+                                        )
+                                        Text(
+                                            text = "TANGGAL",
+                                            fontSize = 10.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = TextSecondaryLight.copy(alpha = 0.6f),
+                                            modifier = Modifier.weight(1.2f),
+                                            textAlign = TextAlign.Center,
+                                            maxLines = 1
+                                        )
+                                        Text(
+                                            text = "STATUS",
+                                            fontSize = 10.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = TextSecondaryLight.copy(alpha = 0.6f),
+                                            modifier = Modifier.weight(1f),
+                                            textAlign = TextAlign.End,
+                                            maxLines = 1
+                                        )
                                     }
                                     
                                     Divider(modifier = Modifier.padding(vertical = 12.dp), color = Color(0xFFF5F5F5))
@@ -386,64 +412,63 @@ fun DashboardScreen(
 }
 
 @Composable
-fun TableHeaderItem(text: String, modifier: Modifier) {
-    Text(
-        text = text,
-        fontSize = 11.sp,
-        fontWeight = FontWeight.Bold,
-        color = TextSecondaryLight.copy(alpha = 0.6f),
-        modifier = modifier
-    )
-}
-
-@Composable
 fun ApplicationRow(application: Application, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() }
-            .padding(vertical = 12.dp),
+            .padding(vertical = 12.dp, horizontal = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = application.job_listing?.title ?: "-",
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Medium,
-            color = TextPrimaryLight,
-            modifier = Modifier.weight(1.5f),
-            maxLines = 2,
-            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
-        )
-        Text(
-            text = application.job_listing?.company?.name ?: "-",
-            fontSize = 12.sp,
-            color = TextSecondaryLight,
-            modifier = Modifier.weight(1.2f),
-            maxLines = 1,
-            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
-        )
+        // Lowongan (judul + perusahaan digabung)
+        Column(modifier = Modifier.weight(2f)) {
+            Text(
+                text = application.job_listing?.title ?: "-",
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Medium,
+                color = TextPrimaryLight,
+                maxLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+            )
+            Text(
+                text = application.job_listing?.company?.name ?: "-",
+                fontSize = 10.sp,
+                color = TextSecondaryLight,
+                maxLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+            )
+        }
+        // Tanggal
         Text(
             text = application.createdAt?.take(10) ?: "-",
-            fontSize = 12.sp,
+            fontSize = 11.sp,
             color = TextSecondaryLight,
-            modifier = Modifier.weight(1.2f)
+            modifier = Modifier.weight(1.2f),
+            textAlign = TextAlign.Center,
+            maxLines = 1
         )
-        
+        // Status
         val statusColor = when(application.status.lowercase()) {
             "accepted", "diterima" -> Color(0xFF4CAF50)
             "rejected", "ditolak" -> Color(0xFFF44336)
-            else -> Color(0xFF9E9E9E)
+            else -> Color(0xFFFF9800)
         }
         
-        Text(
-            text = application.status.uppercase(),
-            fontSize = 10.sp,
-            fontWeight = FontWeight.Bold,
-            color = statusColor,
-            modifier = Modifier.weight(1f),
-            maxLines = 1,
-            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
-        )
+        Surface(
+            shape = RoundedCornerShape(12.dp),
+            color = statusColor.copy(alpha = 0.1f),
+            modifier = Modifier.weight(1f)
+        ) {
+            Text(
+                text = application.status.uppercase(),
+                fontSize = 9.sp,
+                fontWeight = FontWeight.Bold,
+                color = statusColor,
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                textAlign = TextAlign.Center,
+                maxLines = 1
+            )
+        }
     }
 }
 

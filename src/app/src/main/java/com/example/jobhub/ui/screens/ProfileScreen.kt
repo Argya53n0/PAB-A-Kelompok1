@@ -217,7 +217,7 @@ fun ProfileScreen(
                                     CircularProgressIndicator(color = BluePrimary, strokeWidth = 3.dp)
                                 } else if (user.jobSeeker?.profilePicture != null) {
                                     // Use absolute URL pointing to Laravel storage
-                                    val imageUrl = "http://10.0.2.2:8000/storage/${user.jobSeeker.profilePicture}"
+                                    val imageUrl = "http://192.168.100.203:8000/storage/${user.jobSeeker.profilePicture}"
                                     AsyncImage(
                                         model = imageUrl,
                                         contentDescription = "Foto Profil",
