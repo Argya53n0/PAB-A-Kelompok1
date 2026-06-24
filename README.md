@@ -1,45 +1,73 @@
-# JOBHUB Mobile
+<div align="center">
+  <h1>JOBHUB Mobile</h1>
+  <p><em>Platform pencari dan pelamar kerja cerdas berbasis mobile.</em></p>
+</div>
 
-Aplikasi mobile JOBHUB untuk membantu Job Seeker mencari dan melamar pekerjaan melalui smartphone. Dibangun menggunakan **Kotlin** dan **Jetpack Compose**.
+<br/>
 
-## Anggota Tim
+## Tentang Aplikasi
+**JOBHUB Mobile** adalah aplikasi Android native yang dirancang khusus untuk membantu *Job Seeker* (Pencari Kerja) dalam menemukan dan melamar pekerjaan impian mereka dengan mudah dan cepat langsung dari genggaman tangan. Terintegrasi secara *real-time* dengan sistem backend Laravel, JOBHUB menawarkan pengalaman pengguna yang mulus, responsif, dan modern.
 
-- Argya Seno Ahmadi Rizqullah
-- Intan Trinanda
-- Izanahda Nurkhasna
-- Waldani Nabila Tamamah
+## Tech Stack & Library
+Aplikasi ini dikembangkan dengan teknologi Android modern terbaik:
+- **[Kotlin](https://kotlinlang.org/)** - Bahasa pemrograman utama yang ekspresif dan aman.
+- **[Jetpack Compose](https://developer.android.com/jetpack/compose)** - Toolkit UI deklaratif modern untuk membangun antarmuka Android secara native.
+- **[Material Design 3](https://m3.material.io/)** - Sistem panduan desain antarmuka yang dinamis dan *user-friendly*.
+- **[Retrofit & OkHttp](https://square.github.io/retrofit/)** - HTTP Client tangguh untuk komunikasi API secara langsung dengan backend Laravel.
+- **[Coil Compose](https://coil-kt.github.io/coil/compose/)** - Library pemuatan gambar asinkron yang sangat cepat dan ringan.
+- **ViewModel & Navigation Compose** - Arsitektur canggih untuk manajemen *state* dan perpindahan layar.
 
 ---
 
-## 🚀 Cara Menjalankan Aplikasi Mobile (Untuk Anggota Tim)
+## Tim Pengembang (Kelompok 1)
+- **Argya Seno Ahmadi Rizqullah**
+- **Intan Trinanda**
+- **Izanahda Nurkhasna**
+- **Waldani Nabila Tamamah**
 
-Karena aplikasi mobile ini terhubung dengan backend Laravel, ada beberapa langkah penting agar aplikasinya bisa berjalan lancar dan terhubung dengan *database*.
+---
 
-### 1. Jalankan Backend Laravel Dulu
-Aplikasi ini butuh API dari repo RPL (Laravel). Buka project web/Laravel kalian, masuk ke folder `src`, dan jalankan servernya seperti biasa:
+## Panduan Memulai (Cara Penggunaan)
 
+Aplikasi mobile ini merupakan *client-side* yang mengambil data API dari backend web Laravel. Oleh karena itu, backend harus dijalankan terlebih dahulu sebelum menjalankan aplikasi mobile.
+
+### 1. Siapkan & Jalankan Server Backend (Laravel)
+Aplikasi ini membutuhkan backend dari repositori RPL. Kunjungi dan unduh repositorinya di tautan berikut:
+**[Backend JOBHUB (praktikum-rpl-a-1)](https://github.com/WaldaniNabila/praktikum-rpl-a-1)**
+
+Buka repositori backend tersebut di komputermu, masuk ke direktori kode, dan jalankan server *development*:
 ```bash
 cd src
 php artisan serve
 ```
-*(Server akan berjalan di `http://127.0.0.1:8000`)*
+*(Server akan berjalan pada `http://127.0.0.1:8000`)*
 
-### 2. Atur Koneksi API (Sangat Penting!)
-Untuk saat ini, aplikasi mobile telah dikonfigurasi **HANYA untuk dijalankan di Emulator Android Studio**.
+### 2. Konfigurasi Jaringan & API
+Aplikasi ini dapat dijalankan baik di **Emulator** maupun **HP Fisik**. Namun, kamu perlu menyesuaikan Base URL API yang ada di file `ApiClient.kt` (`src/app/src/main/java/com/example/jobhub/network/ApiClient.kt`):
 
-- **Pakai Emulator (Android Studio / AVD)**
-  Aplikasi menggunakan IP `10.0.2.2` secara default. Kamu **tidak perlu melakukan konfigurasi tambahan apapun**. Emulator akan otomatis terhubung ke *localhost* laptopmu (`127.0.0.1`). Langsung *Run* saja aplikasinya menggunakan *virtual device*!
+- **Jika menggunakan HP Fisik (Disarankan):**
+  Pastikan HP dan laptop kamu terhubung ke jaringan WiFi yang sama. Ubah `BASE_URL` dengan IP lokal laptopmu IPv4 (contoh: `http://192.168.100.203:8000/api/`).
+- **Jika menggunakan Emulator Android Studio:**
+  Ubah `BASE_URL` menjadi `http://10.0.2.2:8000/api/` (IP default emulator untuk mengakses *localhost* komputer).
 
-> ⚠️ **Peringatan:** Jangan jalankan di HP Asli (fisik) untuk sementara waktu, karena kodenya sedang di-*lock* khusus untuk IP Emulator.
+### 3. Build & Run Aplikasi
+1. Buka folder `src` dari repositori ini menggunakan **Android Studio**.
+2. Tunggu hingga proses sinkronisasi Gradle (**Gradle Sync**) selesai sepenuhnya.
+3. Hubungkan HP fisik menggunakan kabel USB/Wireless Debugging, atau siapkan emulator di **Device Manager**.
+4. Pastikan nama perangkatmu sudah terpilih di bilah menu atas Android Studio.
+5. Klik tombol **Run 'app'** (ikon Play warna hijau).
+6. Tunggu proses kompilasi (*build*) hingga selesai dan aplikasi akan terbuka secara otomatis di perangkatmu.
 
-### 3. Cara Menjalankan Aplikasi (Build & Run)
-Buka folder `src` di **Android Studio** dan tunggu sampai proses *Gradle Sync* (loading di bagian bawah) selesai. Setelah itu, ikuti panduan sesuai perangkat yang kamu pilih:
+---
 
-#### Menjalankan di Emulator (Virtual Device)
-1. Buka **Device Manager** (Ikon HP di kanan atas atau `View -> Tool Windows -> Device Manager`).
-2. Klik **Create Device** jika belum punya emulator. Pilih tipe HP (misal: Pixel 6), lalu klik Next dan download System Image yang disarankan (misal: API 34), lalu Finish.
-3. Klik tombol **Play (▶️)** di samping nama emulator pada Device Manager untuk menyalakannya.
-4. Di bagian atas Android Studio (sebelah tombol Run), pastikan nama emulator-mu sudah terpilih.
-5. Klik tombol **Run 'app' (▶️ hijau)** di menu atas.
-6. Tunggu proses build selesai dan aplikasi akan terbuka otomatis di Emulator.
+## Fitur Utama
+- **Autentikasi Aman:** Sistem Login dan Registrasi yang terintegrasi penuh dengan API.
+- **Eksplorasi Lowongan:** Fitur pencarian dan eksplorasi pekerjaan berdasarkan minat dan *skills*.
+- **Detail Pekerjaan:** Informasi komprehensif mengenai posisi pekerjaan, persyaratan, dan profil perusahaan.
+- **Lamar Sekali Klik:** Proses pelamaran kerja yang *seamless* langsung dari aplikasi.
 
+<br/>
+
+<div align="center">
+  <sub>Dibuat oleh Kelompok 1</sub>
+</div>
